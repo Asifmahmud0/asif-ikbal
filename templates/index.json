@@ -13,16 +13,31 @@
       "type": "banner-gift-guide",
       "name": "Banner – Gift Guide",
       "settings": {
+        "logo_image": "shopify://shop_images/casual-fashion-woman_925x_56b56608-f207-45c1-b677-bb5aa26c1c7a.jpg",
+        "logo_width": 120,
         "logo_text": "TISSO VISON",
         "nav_tagline": "Find the ideal gift for your loved ones.",
+        "nav_bg_color": "#ffffff",
+        "nav_text_color": "#111111",
         "cta_choose_label": "CHOOSE GIFT",
         "cta_choose_url": "",
-        "bg_image": "shopify://shop_images/young-man-in-bright-fashion_925x_b3b7ebd6-c91f-496a-a516-45403497ea25.jpg",
+        "nav_btn_bg_color": "#f5e130",
+        "nav_btn_text_color": "#111111",
+        "bg_image_desktop": "shopify://shop_images/young-man-in-bright-fashion_925x_b3b7ebd6-c91f-496a-a516-45403497ea25.jpg",
+        "height_desktop": 700,
+        "height_mobile": 500,
+        "overlay_color": "#000000",
+        "overlay_opacity": 20,
         "heading": "The Gift Guide",
+        "heading_color": "#ffffff",
         "description": "Discover Joy: Your Ultimate Holiday Gift Destination. Explore our curated selection and find the perfect gifts to delight your loved ones this holiday season.",
+        "text_color": "#ffffff",
         "cta_shop_label": "SHOP NOW",
         "cta_shop_url": "",
-        "ticker_text": "SUSTAINABLE, ETHICALLY MADE CLOTHES IN SIZES XXS TO 6XL"
+        "btn_bg_color": "#111111",
+        "btn_text_color": "#ffffff",
+        "btn_hover_bg_color": "#f5e130",
+        "btn_hover_text_color": "#121212"
       }
     },
     "product_grid_kYkrbN": {
