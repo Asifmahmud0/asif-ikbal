@@ -56,12 +56,6 @@
     --bgg-ticker-speed: {{ section.settings.ticker_speed }}s;
   }
 
-  /* 🔥 OVERLAY FIX: Applied directly with calc to avoid browser/locale comma bugs 🔥 */
-  #bgg-{{ section.id }} .bgg-hero__overlay {
-    background-color: {{ section.settings.overlay_color | default: '#000000' }};
-    opacity: calc({{ section.settings.overlay_opacity | default: 15 }} * 0.01);
-  }
-
   /* ── Mobile Overrides ── */
   @media (max-width: 768px) {
     #bgg-{{ section.id }} {
@@ -130,11 +124,6 @@
   .bgg-hero__bg-wrap { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
   .bgg-hero__bg-wrap picture { display: block; width: 100%; height: 100%; }
   .bgg-hero__bg-img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  
-  .bgg-hero__overlay {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;
-    pointer-events: none; /* Prevents overlay from blocking clicks */
-  }
 
   /* Content */
   .bgg-hero__content { 
@@ -211,8 +200,6 @@
       {% else %}
         <div style="width:100%; height:100%; background:#ddd;"></div>
       {% endif %}
-      <!-- Hero Overlay -->
-      <div class="bgg-hero__overlay"></div>
     </div>
 
     <!-- Hero Content -->
@@ -270,8 +257,6 @@
     { "type": "image_picker", "id": "bg_image_mobile", "label": "Mobile Background (Optional)" },
     { "type": "range", "id": "height_desktop", "min": 400, "max": 1000, "step": 10, "unit": "px", "label": "Desktop Height", "default": 650 },
     { "type": "range", "id": "height_mobile", "min": 300, "max": 800, "step": 10, "unit": "px", "label": "Mobile Height", "default": 550 },
-    { "type": "color", "id": "overlay_color", "label": "Overlay Color", "default": "#000000" },
-    { "type": "range", "id": "overlay_opacity", "min": 0, "max": 100, "step": 5, "unit": "%", "label": "Overlay Opacity", "default": 15 },
     {
       "type": "select", "id": "align_desktop", "label": "Text Alignment (Desktop)",
       "options": [ { "value": "left", "label": "Left" }, { "value": "center", "label": "Center" }, { "value": "right", "label": "Right" } ],
