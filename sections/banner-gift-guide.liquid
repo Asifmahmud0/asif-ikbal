@@ -39,8 +39,9 @@
     --bgg-heading-color: {{ section.settings.heading_color }};
     --bgg-text-color: {{ section.settings.text_color }};
     
+    /* Using CSS calc prevents locale comma issues in Liquid */
     --bgg-overlay-color: {{ section.settings.overlay_color }};
-    --bgg-overlay-opacity: {{ section.settings.overlay_opacity | divided_by: 100.0 }};
+    --bgg-overlay-opacity: calc({{ section.settings.overlay_opacity }} / 100);
 
     /* Primary Button (Hero) */
     --bgg-btn-bg: {{ section.settings.btn_bg_color }};
@@ -131,11 +132,14 @@
     padding: 40px 32px calc(60px + 40px); /* Extra padding for ticker */
   }
   .bgg-hero__bg-wrap { position: absolute; inset: 0; z-index: 0; }
+  .bgg-hero__bg-wrap picture { display: block; width: 100%; height: 100%; }
   .bgg-hero__bg-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  
   .bgg-hero__overlay {
     position: absolute; inset: 0; z-index: 1;
     background-color: var(--bgg-overlay-color);
     opacity: var(--bgg-overlay-opacity);
+    pointer-events: none;
   }
 
   /* Content */
