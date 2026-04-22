@@ -1,0 +1,439 @@
+{% comment %}
+  ============================================================
+  Section: Banner Gift Guide
+  Description: Hero banner with nav bar, background image,
+               headline, description, CTA buttons and
+               scrolling ticker. All text is editable from
+               the customizer. Buttons have slide-fill animation.
+  ============================================================
+{% endcomment %}
+
+<style>
+  /* ── Reset & root variables ── */
+  .bgg-section *,
+  .bgg-section *::before,
+  .bgg-section *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  .bgg-section {
+    --bgg-font-heading : 'Georgia', serif;
+    --bgg-font-body    : 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    --bgg-color-bg     : #f5f5f0;
+    --bgg-color-black  : #111111;
+    --bgg-color-white  : #ffffff;
+    --bgg-color-yellow : #f5e130;
+    --bgg-color-border : #111111;
+    --bgg-nav-height   : 52px;
+    --bgg-ticker-height: 36px;
+
+    position: relative;
+    width: 100%;
+    background-color: var(--bgg-color-bg);
+    font-family: var(--bgg-font-body);
+    overflow: hidden;
+  }
+
+  /* ── NAV BAR ── */
+  .bgg-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    height: var(--bgg-nav-height);
+    background: var(--bgg-color-bg);
+    border-bottom: 1px solid var(--bgg-color-border);
+    position: relative;
+    z-index: 10;
+  }
+
+  .bgg-nav__logo {
+    font-family: var(--bgg-font-heading);
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--bgg-color-black);
+    text-decoration: none;
+  }
+
+  .bgg-nav__tagline {
+    font-size: 13px;
+    color: var(--bgg-color-black);
+    letter-spacing: 0.02em;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  /* Choose Gift button – yellow with slide animation */
+  .bgg-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--bgg-font-body);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    border: 2px solid var(--bgg-color-black);
+    padding: 10px 20px;
+    position: relative;
+    overflow: hidden;
+    transition: color 0.35s ease;
+    white-space: nowrap;
+  }
+
+  /* Sliding fill pseudo-element */
+  .bgg-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-101%);
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 0;
+  }
+
+  .bgg-btn span,
+  .bgg-btn svg {
+    position: relative;
+    z-index: 1;
+  }
+
+  .bgg-btn:hover::before {
+    transform: translateX(0);
+  }
+
+  /* Yellow variant (nav CTA) */
+  .bgg-btn--yellow {
+    background: var(--bgg-color-yellow);
+    color: var(--bgg-color-black);
+  }
+
+  .bgg-btn--yellow::before {
+    background: var(--bgg-color-black);
+  }
+
+  .bgg-btn--yellow:hover {
+    color: var(--bgg-color-yellow);
+  }
+
+  /* Black variant (hero CTA) */
+  .bgg-btn--black {
+    background: var(--bgg-color-black);
+    color: var(--bgg-color-white);
+  }
+
+  .bgg-btn--black::before {
+    background: var(--bgg-color-yellow);
+  }
+
+  .bgg-btn--black:hover {
+    color: var(--bgg-color-black);
+  }
+
+  /* Arrow icon */
+  .bgg-btn__arrow {
+    width: 18px;
+    height: 12px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    transition: transform 0.25s ease;
+  }
+
+  .bgg-btn:hover .bgg-btn__arrow {
+    transform: translateX(4px);
+  }
+
+  /* ── HERO AREA ── */
+  .bgg-hero {
+    position: relative;
+    min-height: 520px;
+    display: flex;
+    align-items: flex-end;
+    padding: 40px 32px 52px;
+  }
+
+  /* Background image fills the hero */
+  .bgg-hero__bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    z-index: 0;
+    opacity: 0.85;
+  }
+
+  /* Fallback background pattern when no image uploaded */
+  .bgg-hero__bg-fallback {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 19px,
+      rgba(0,0,0,0.04) 19px,
+      rgba(0,0,0,0.04) 20px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 19px,
+      rgba(0,0,0,0.04) 19px,
+      rgba(0,0,0,0.04) 20px
+    );
+    z-index: 0;
+  }
+
+  /* Content sits on top of background */
+  .bgg-hero__content {
+    position: relative;
+    z-index: 2;
+    max-width: 420px;
+  }
+
+  .bgg-hero__heading {
+    font-family: var(--bgg-font-heading);
+    font-size: clamp(36px, 5vw, 62px);
+    font-weight: 700;
+    line-height: 1.05;
+    color: var(--bgg-color-black);
+    margin-bottom: 18px;
+  }
+
+  .bgg-hero__description {
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--bgg-color-black);
+    margin-bottom: 28px;
+    max-width: 320px;
+  }
+
+  /* ── TICKER / MARQUEE ── */
+  .bgg-ticker {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: var(--bgg-ticker-height);
+    background: var(--bgg-color-bg);
+    border-top: 1px solid var(--bgg-color-border);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    z-index: 3;
+  }
+
+  .bgg-ticker__track {
+    display: flex;
+    white-space: nowrap;
+    animation: bgg-marquee 18s linear infinite;
+    will-change: transform;
+  }
+
+  /* Duplicate content for seamless loop */
+  .bgg-ticker__track:hover {
+    animation-play-state: paused;
+  }
+
+  .bgg-ticker__item {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--bgg-color-black);
+    padding: 0 40px;
+  }
+
+  @keyframes bgg-marquee {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .bgg-nav__tagline {
+      display: none;
+    }
+
+    .bgg-nav {
+      padding: 0 16px;
+    }
+
+    .bgg-hero {
+      min-height: 400px;
+      padding: 24px 16px 52px;
+      align-items: flex-end;
+    }
+
+    .bgg-hero__content {
+      max-width: 100%;
+    }
+
+    .bgg-hero__heading {
+      font-size: clamp(28px, 8vw, 42px);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .bgg-btn {
+      font-size: 11px;
+      padding: 8px 14px;
+    }
+
+    .bgg-nav__logo {
+      font-size: 15px;
+    }
+  }
+</style>
+
+<section class="bgg-section" id="bgg-{{ section.id }}">
+
+  <!-- ── NAV BAR ── -->
+  <nav class="bgg-nav">
+    <a class="bgg-nav__logo" href="{{ routes.root_url }}">
+      {{ section.settings.logo_text }}
+    </a>
+
+    <p class="bgg-nav__tagline">{{ section.settings.nav_tagline }}</p>
+
+    <a class="bgg-btn bgg-btn--yellow" href="{{ section.settings.cta_choose_url }}">
+      <span>{{ section.settings.cta_choose_label }}</span>
+      <svg class="bgg-btn__arrow" viewBox="0 0 18 12" aria-hidden="true">
+        <path d="M0 6h16M11 1l5 5-5 5"/>
+      </svg>
+    </a>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <div class="bgg-hero">
+
+    {% if section.settings.bg_image != blank %}
+      <img
+        class="bgg-hero__bg"
+        src="{{ section.settings.bg_image | img_url: '1600x' }}"
+        alt="{{ section.settings.bg_image.alt | default: '' }}"
+        loading="eager"
+        fetchpriority="high"
+      >
+    {% else %}
+      <div class="bgg-hero__bg-fallback" aria-hidden="true"></div>
+    {% endif %}
+
+    <div class="bgg-hero__content">
+      <h1 class="bgg-hero__heading">{{ section.settings.heading }}</h1>
+      <p class="bgg-hero__description">{{ section.settings.description }}</p>
+
+      <a class="bgg-btn bgg-btn--black" href="{{ section.settings.cta_shop_url }}">
+        <span>{{ section.settings.cta_shop_label }}</span>
+        <svg class="bgg-btn__arrow" viewBox="0 0 18 12" aria-hidden="true">
+          <path d="M0 6h16M11 1l5 5-5 5"/>
+        </svg>
+      </a>
+    </div>
+
+    <!-- ── TICKER ── -->
+    <div class="bgg-ticker" aria-hidden="true">
+      <div class="bgg-ticker__track">
+        {% assign ticker_text = section.settings.ticker_text %}
+        {% comment %} Repeat enough times to fill wide screens seamlessly {% endcomment %}
+        {% for i in (1..10) %}
+          <span class="bgg-ticker__item">{{ ticker_text }}</span>
+          <span class="bgg-ticker__item" aria-hidden="true">·</span>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Banner – Gift Guide",
+  "tag": "section",
+  "class": "bgg-section-wrapper",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Navigation"
+    },
+    {
+      "type": "text",
+      "id": "logo_text",
+      "label": "Logo / Brand name",
+      "default": "TISSO VISON"
+    },
+    {
+      "type": "text",
+      "id": "nav_tagline",
+      "label": "Nav centre tagline",
+      "default": "Find the ideal gift for your loved ones."
+    },
+    {
+      "type": "text",
+      "id": "cta_choose_label",
+      "label": "\"Choose Gift\" button label",
+      "default": "CHOOSE GIFT"
+    },
+    {
+      "type": "url",
+      "id": "cta_choose_url",
+      "label": "\"Choose Gift\" button URL"
+    },
+    {
+      "type": "header",
+      "content": "Hero Content"
+    },
+    {
+      "type": "image_picker",
+      "id": "bg_image",
+      "label": "Background image"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Main heading",
+      "default": "The Gift Guide"
+    },
+    {
+      "type": "textarea",
+      "id": "description",
+      "label": "Description text",
+      "default": "Discover Joy: Your Ultimate Holiday Gift Destination. Explore our curated selection and find the perfect gifts to delight your loved ones this holiday season."
+    },
+    {
+      "type": "text",
+      "id": "cta_shop_label",
+      "label": "\"Shop Now\" button label",
+      "default": "SHOP NOW"
+    },
+    {
+      "type": "url",
+      "id": "cta_shop_url",
+      "label": "\"Shop Now\" button URL"
+    },
+    {
+      "type": "header",
+      "content": "Ticker / Marquee"
+    },
+    {
+      "type": "text",
+      "id": "ticker_text",
+      "label": "Ticker message (repeats automatically)",
+      "default": "SUSTAINABLE, ETHICALLY MADE CLOTHES IN SIZES XXS TO 6XL"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Banner – Gift Guide"
+    }
+  ]
+}
+{% endschema %}
