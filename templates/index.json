@@ -90,7 +90,10 @@
       ],
       "name": "Product Grid",
       "settings": {
-        "section_title": "Tisso vison in the wild"
+        "section_title": "Tisso vison in the wild",
+        "image_ratio": "custom",
+        "custom_height": 410,
+        "auto_add_product": "black-leather-bag"
       }
     }
   },
