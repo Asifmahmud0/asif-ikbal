@@ -1,0 +1,304 @@
+{% comment %}
+  ============================================================
+  Section: Custom Banner Section
+  Description: Fully customizable Hero banner with nav bar, 
+               separate mobile/desktop settings, text sizing, 
+               alignment, and an infinite scrolling ticker.
+  ============================================================
+      {% endcomment %}
+
+{%- style -%}
+  #bgg-{{ section.id }} {
+    /* ── Layout & Alignments ── */
+    --bgg-nav-height: {{ section.settings.nav_height }}px;
+    --bgg-height-desktop: {{ section.settings.height_desktop }}px;
+    --bgg-height-mobile: {{ section.settings.height_mobile }}px;
+    
+    --bgg-align-desktop: {{ section.settings.align_desktop }};
+    --bgg-flex-desktop: {% if section.settings.align_desktop == 'center' %}center{% elsif section.settings.align_desktop == 'right' %}flex-end{% else %}flex-start{% endif %};
+    
+    --bgg-align-mobile: {{ section.settings.align_mobile }};
+    --bgg-flex-mobile: {% if section.settings.align_mobile == 'center' %}center{% elsif section.settings.align_mobile == 'right' %}flex-end{% else %}flex-start{% endif %};
+
+    /* ── Text Sizes (Desktop) ── */
+    --bgg-logo-size: {{ section.settings.logo_size_desk }}px;
+    --bgg-tagline-size: {{ section.settings.tagline_size_desk }}px;
+    --bgg-heading-size: {{ section.settings.heading_size_desk }}px;
+    --bgg-desc-size: {{ section.settings.desc_size_desk }}px;
+    --bgg-btn-size: {{ section.settings.btn_size_desk }}px;
+    --bgg-ticker-size: {{ section.settings.ticker_size_desk }}px;
+
+    /* ── Button Sizing ── */
+    --bgg-btn-pad-v: {{ section.settings.btn_pad_v }}px;
+    --bgg-btn-pad-h: {{ section.settings.btn_pad_h }}px;
+
+    /* ── Colors ── */
+    --bgg-nav-bg: {{ section.settings.nav_bg_color }};
+    --bgg-nav-text: {{ section.settings.nav_text_color }};
+    --bgg-heading-color: {{ section.settings.heading_color }};
+    --bgg-text-color: {{ section.settings.text_color }};
+    
+    /* Primary Button (Hero) */
+    --bgg-btn-bg: {{ section.settings.btn_bg_color }};
+    --bgg-btn-text: {{ section.settings.btn_text_color }};
+    --bgg-btn-hover-bg: {{ section.settings.btn_hover_bg_color }};
+    --bgg-btn-hover-text: {{ section.settings.btn_hover_text_color }};
+
+    /* Secondary Button (Nav) */
+    --bgg-nav-btn-bg: {{ section.settings.nav_btn_bg_color }};
+    --bgg-nav-btn-text: {{ section.settings.nav_btn_text_color }};
+    --bgg-nav-btn-hover-bg: {{ section.settings.nav_btn_hover_bg_color }};
+    --bgg-nav-btn-hover-text: {{ section.settings.nav_btn_hover_text_color }};
+
+    /* Ticker */
+    --bgg-ticker-bg: {{ section.settings.ticker_bg }};
+    --bgg-ticker-text: {{ section.settings.ticker_color }};
+    --bgg-ticker-speed: {{ section.settings.ticker_speed }}s;
+  }
+
+               /* ── Mobile Overrides ── */
+  @media (max-width: 768px) {
+    #bgg-{{ section.id }} {
+      --bgg-logo-size: {{ section.settings.logo_size_mob }}px;
+      --bgg-tagline-size: {{ section.settings.tagline_size_mob }}px;
+      --bgg-heading-size: {{ section.settings.heading_size_mob }}px;
+      --bgg-desc-size: {{ section.settings.desc_size_mob }}px;
+      --bgg-btn-size: {{ section.settings.btn_size_mob }}px;
+      --bgg-ticker-size: {{ section.settings.ticker_size_mob }}px;
+    }
+  }
+
+              /* ── Reset & Structure ── */
+  .bgg-section *, .bgg-section *::before, .bgg-section *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  .bgg-section {
+    position: relative; width: 100%; background-color: var(--bgg-nav-bg);
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; overflow: hidden;
+  }
+
+              /* ── Nav Bar ── */
+  .bgg-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px; height: var(--bgg-nav-height); background: var(--bgg-nav-bg);
+    border-bottom: 1px solid rgba(0,0,0,0.08); position: relative; z-index: 10;
+  }
+  .bgg-nav__logo-link { display: flex; align-items: center; text-decoration: none; }
+  .bgg-nav__logo-img { max-height: calc(var(--bgg-nav-height) - 16px); width: auto; object-fit: contain; }
+  .bgg-nav__logo-text { font-family: 'Georgia', serif; font-size: var(--bgg-logo-size); font-weight: 700; color: var(--bgg-nav-text); text-transform: uppercase; }
+  .bgg-nav__tagline { font-size: var(--bgg-tagline-size); color: var(--bgg-nav-text); position: absolute; left: 50%; transform: translateX(-50%); }
+
+            /* ── Buttons ── */
+  .bgg-btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-size: var(--bgg-btn-size); font-weight: 600; letter-spacing: 0.08em; 
+    text-transform: uppercase; text-decoration: none;
+    padding: var(--bgg-btn-pad-v) var(--bgg-btn-pad-h); 
+    position: relative; overflow: hidden; transition: color 0.35s ease;
+    border: none; cursor: pointer;
+  }
+  .bgg-btn::before {
+    content: ''; position: absolute; inset: 0; transform: translateX(-101%);
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1); z-index: 0;
+  }
+  .bgg-btn span, .bgg-btn svg { position: relative; z-index: 1; }
+  .bgg-btn:hover::before { transform: translateX(0); }
+  .bgg-btn__arrow { width: 1.4em; height: 0.9em; stroke: currentColor; fill: none; stroke-width: 2; transition: transform 0.25s ease; }
+  .bgg-btn:hover .bgg-btn__arrow { transform: translateX(4px); }
+
+  /* Nav Button */
+  .bgg-btn--nav { background: var(--bgg-nav-btn-bg); color: var(--bgg-nav-btn-text); }
+  .bgg-btn--nav::before { background: var(--bgg-nav-btn-hover-bg); }
+  .bgg-btn--nav:hover { color: var(--bgg-nav-btn-hover-text); }
+
+  /* Hero Button */
+  .bgg-btn--hero { background: var(--bgg-btn-bg); color: var(--bgg-btn-text); }
+  .bgg-btn--hero::before { background: var(--bgg-btn-hover-bg); }
+  .bgg-btn--hero:hover { color: var(--bgg-btn-hover-text); }
+
+                  /* ── Hero Area ── */
+  .bgg-hero {
+    position: relative;
+    height: var(--bgg-height-desktop);
+    display: flex; align-items: flex-end; justify-content: var(--bgg-flex-desktop);
+    padding: 40px 32px calc(60px + 40px); /* Extra padding to avoid overlap with ticker */
+  }
+  .bgg-hero__bg-wrap { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+  .bgg-hero__bg-wrap picture { display: block; width: 100%; height: 100%; }
+  .bgg-hero__bg-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  /* Content */
+  .bgg-hero__content { 
+    position: relative; z-index: 2; max-width: 600px; 
+    text-align: var(--bgg-align-desktop);
+  }
+  .bgg-hero__heading { font-family: 'Georgia', serif; font-size: var(--bgg-heading-size); color: var(--bgg-heading-color); margin-bottom: 18px; line-height: 1.05; }
+  .bgg-hero__description { font-size: var(--bgg-desc-size); line-height: 1.6; color: var(--bgg-text-color); margin-bottom: 28px; }
+
+  /* ── Infinite Ticker / Marquee ── */
+  .bgg-ticker {
+    position: absolute; bottom: 0; left: 0; width: 100%;
+    background: var(--bgg-ticker-bg); border-top: 1px solid rgba(0,0,0,0.08);
+    overflow: hidden; z-index: 5; display: flex; align-items: center;
+    padding: 12px 0;
+  }
+  .bgg-ticker__track {
+    display: flex; white-space: nowrap;
+    animation: bgg-marquee var(--bgg-ticker-speed) linear infinite;
+  }
+  .bgg-ticker__track:hover { animation-play-state: paused; }
+  .bgg-ticker__item {
+    font-size: var(--bgg-ticker-size); font-weight: 600; letter-spacing: 0.1em;
+    color: var(--bgg-ticker-text); padding: 0 20px;
+  }
+  
+  @keyframes bgg-marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* ── Responsive Mobile overrides ── */
+  @media (max-width: 768px) {
+    .bgg-hero { 
+      height: var(--bgg-height-mobile); 
+      padding: 30px 20px calc(50px + 30px); 
+      justify-content: var(--bgg-flex-mobile);
+    }
+    .bgg-hero__content { text-align: var(--bgg-align-mobile); }
+    .bgg-nav__tagline { display: none; }
+    .bgg-nav { padding: 0 16px; }
+    .bgg-ticker { padding: 10px 0; }
+  }
+{%- endstyle -%}
+
+<section class="bgg-section" id="bgg-{{ section.id }}">
+  
+  <!-- Nav Bar -->
+  <nav class="bgg-nav">
+    <a class="bgg-nav__logo-link" href="{{ routes.root_url }}">
+      {% if section.settings.logo_image != blank %}
+        <img class="bgg-nav__logo-img" src="{{ section.settings.logo_image | img_url: 'master' }}" alt="{{ section.settings.logo_image.alt | default: shop.name }}" style="width: {{ section.settings.logo_width }}px;">
+      {% else %}
+        <span class="bgg-nav__logo-text">{{ section.settings.logo_text }}</span>
+      {% endif %}
+    </a>
+    <p class="bgg-nav__tagline">{{ section.settings.nav_tagline }}</p>
+    <a class="bgg-btn bgg-btn--nav" href="{{ section.settings.cta_choose_url }}">
+      <span>{{ section.settings.cta_choose_label }}</span>
+      <svg class="bgg-btn__arrow" viewBox="0 0 18 12"><path d="M0 6h16M11 1l5 5-5 5"/></svg>
+    </a>
+  </nav>
+
+              <!-- Hero Section -->
+      <div class="bgg-hero">
+        <div class="bgg-hero__bg-wrap">
+      {% if section.settings.bg_image_desktop != blank %}
+        <picture>
+          {% if section.settings.bg_image_mobile != blank %}
+            <source media="(max-width: 768px)" srcset="{{ section.settings.bg_image_mobile | img_url: '800x' }}">
+          {% endif %}
+          <img class="bgg-hero__bg-img" src="{{ section.settings.bg_image_desktop | img_url: '1600x' }}" alt="Banner background">
+        </picture>
+      {% else %}
+        <div style="width:100%; height:100%; background:#ddd;"></div>
+      {% endif %}
+    </div>
+
+    <!-- Hero Content -->
+    <div class="bgg-hero__content">
+      <h1 class="bgg-hero__heading">{{ section.settings.heading }}</h1>
+      <p class="bgg-hero__description">{{ section.settings.description }}</p>
+      <a class="bgg-btn bgg-btn--hero" href="{{ section.settings.cta_shop_url }}">
+        <span>{{ section.settings.cta_shop_label }}</span>
+        <svg class="bgg-btn__arrow" viewBox="0 0 18 12"><path d="M0 6h16M11 1l5 5-5 5"/></svg>
+      </a>
+    </div>
+
+    <!-- Infinite Scroll Ticker -->
+    <div class="bgg-ticker" aria-hidden="true">
+      <div class="bgg-ticker__track">
+        {% assign ticker_text = section.settings.ticker_text %}
+        {% comment %} Repeat enough times to fill wide screens seamlessly {% endcomment %}
+        {% for i in (1..8) %}
+          <span class="bgg-ticker__item">{{ ticker_text }}</span>
+          <span class="bgg-ticker__item" style="padding:0;">·</span>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Custom – Banner Section",
+  "settings": [
+    { "type": "header", "content": "Navigation Settings" },
+    { "type": "range", "id": "nav_height", "min": 40, "max": 100, "step": 2, "unit": "px", "label": "Nav Bar Height", "default": 60 },
+    { "type": "color", "id": "nav_bg_color", "label": "Nav Background", "default": "#f5f5f0" },
+    { "type": "color", "id": "nav_text_color", "label": "Nav Text Color", "default": "#111111" },
+    { "type": "text", "id": "logo_text", "label": "Logo Text", "default": "TISSO VISON" },
+    { "type": "image_picker", "id": "logo_image", "label": "Logo Image (Overrides text)" },
+    { "type": "range", "id": "logo_width", "min": 50, "max": 250, "step": 5, "unit": "px", "label": "Logo Image Width", "default": 120 },
+    { "type": "range", "id": "logo_size_desk", "min": 12, "max": 40, "step": 1, "unit": "px", "label": "Logo Text Size (Desktop)", "default": 18 },
+    { "type": "range", "id": "logo_size_mob", "min": 10, "max": 30, "step": 1, "unit": "px", "label": "Logo Text Size (Mobile)", "default": 15 },
+    { "type": "text", "id": "nav_tagline", "label": "Tagline", "default": "Find the ideal gift for your loved ones." },
+    { "type": "range", "id": "tagline_size_desk", "min": 10, "max": 24, "step": 1, "unit": "px", "label": "Tagline Size (Desktop)", "default": 13 },
+    { "type": "range", "id": "tagline_size_mob", "min": 10, "max": 20, "step": 1, "unit": "px", "label": "Tagline Size (Mobile)", "default": 12 },
+
+    { "type": "header", "content": "Nav Button Settings" },
+    { "type": "text", "id": "cta_choose_label", "label": "Button Text", "default": "CHOOSE GIFT" },
+    { "type": "url", "id": "cta_choose_url", "label": "Button Link" },
+    { "type": "color", "id": "nav_btn_bg_color", "label": "Button Background", "default": "#f5e130" },
+    { "type": "color", "id": "nav_btn_text_color", "label": "Button Text Color", "default": "#111111" },
+    { "type": "color", "id": "nav_btn_hover_bg_color", "label": "Hover Background", "default": "#111111" },
+    { "type": "color", "id": "nav_btn_hover_text_color", "label": "Hover Text Color", "default": "#ffffff" },
+
+    { "type": "header", "content": "Hero Layout & Background" },
+    { "type": "image_picker", "id": "bg_image_desktop", "label": "Desktop Background" },
+    { "type": "image_picker", "id": "bg_image_mobile", "label": "Mobile Background (Optional)" },
+    { "type": "range", "id": "height_desktop", "min": 400, "max": 1000, "step": 10, "unit": "px", "label": "Desktop Height", "default": 650 },
+    { "type": "range", "id": "height_mobile", "min": 300, "max": 800, "step": 10, "unit": "px", "label": "Mobile Height", "default": 550 },
+    {
+      "type": "select", "id": "align_desktop", "label": "Text Alignment (Desktop)",
+      "options": [ { "value": "left", "label": "Left" }, { "value": "center", "label": "Center" }, { "value": "right", "label": "Right" } ],
+      "default": "left"
+    },
+    {
+      "type": "select", "id": "align_mobile", "label": "Text Alignment (Mobile)",
+      "options": [ { "value": "left", "label": "Left" }, { "value": "center", "label": "Center" }, { "value": "right", "label": "Right" } ],
+      "default": "left"
+    },
+
+    { "type": "header", "content": "Hero Text & Sizes" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "The Gift Guide" },
+    { "type": "color", "id": "heading_color", "label": "Heading Color", "default": "#ffffff" },
+    { "type": "range", "id": "heading_size_desk", "min": 24, "max": 80, "step": 1, "unit": "px", "label": "Heading Size (Desktop)", "default": 62 },
+    { "type": "range", "id": "heading_size_mob", "min": 20, "max": 60, "step": 1, "unit": "px", "label": "Heading Size (Mobile)", "default": 42 },
+    
+    { "type": "textarea", "id": "description", "label": "Description", "default": "Discover Joy: Your Ultimate Holiday Gift Destination." },
+    { "type": "color", "id": "text_color", "label": "Description Color", "default": "#ffffff" },
+    { "type": "range", "id": "desc_size_desk", "min": 12, "max": 30, "step": 1, "unit": "px", "label": "Description Size (Desktop)", "default": 15 },
+    { "type": "range", "id": "desc_size_mob", "min": 10, "max": 24, "step": 1, "unit": "px", "label": "Description Size (Mobile)", "default": 14 },
+
+    { "type": "header", "content": "Global Button Sizing & Hero Button Colors" },
+    { "type": "range", "id": "btn_pad_v", "min": 5, "max": 30, "step": 1, "unit": "px", "label": "Button Padding (Top/Bottom)", "default": 14 },
+    { "type": "range", "id": "btn_pad_h", "min": 10, "max": 50, "step": 1, "unit": "px", "label": "Button Padding (Left/Right)", "default": 28 },
+    { "type": "range", "id": "btn_size_desk", "min": 10, "max": 24, "step": 1, "unit": "px", "label": "Button Text Size (Desktop)", "default": 13 },
+    { "type": "range", "id": "btn_size_mob", "min": 9, "max": 20, "step": 1, "unit": "px", "label": "Button Text Size (Mobile)", "default": 11 },
+    { "type": "text", "id": "cta_shop_label", "label": "Hero Button Text", "default": "SHOP NOW" },
+    { "type": "url", "id": "cta_shop_url", "label": "Hero Button Link" },
+    { "type": "color", "id": "btn_bg_color", "label": "Hero Button Background", "default": "#111111" },
+    { "type": "color", "id": "btn_text_color", "label": "Hero Button Text Color", "default": "#ffffff" },
+    { "type": "color", "id": "btn_hover_bg_color", "label": "Hero Hover Background", "default": "#f5e130" },
+    { "type": "color", "id": "btn_hover_text_color", "label": "Hero Hover Text Color", "default": "#111111" },
+
+    { "type": "header", "content": "Infinite Scroll Ticker" },
+    { "type": "text", "id": "ticker_text", "label": "Ticker Message", "default": "SUSTAINABLE, ETHICALLY MADE CLOTHES IN SIZES XXS TO 6XL" },
+    { "type": "color", "id": "ticker_bg", "label": "Ticker Background", "default": "#f5f5f0" },
+    { "type": "color", "id": "ticker_color", "label": "Ticker Text Color", "default": "#111111" },
+    { "type": "range", "id": "ticker_speed", "min": 5, "max": 60, "step": 1, "unit": "sec", "label": "Scroll Speed", "default": 25 },
+    { "type": "range", "id": "ticker_size_desk", "min": 10, "max": 24, "step": 1, "unit": "px", "label": "Ticker Text Size (Desktop)", "default": 12 },
+    { "type": "range", "id": "ticker_size_mob", "min": 9, "max": 20, "step": 1, "unit": "px", "label": "Ticker Text Size (Mobile)", "default": 10 }
+  ],
+  "presets": [{ "name": "Custom – Banner Section" }]
+}
+{% endschema %}
