@@ -35,14 +35,9 @@
     /* ── Colors ── */
     --bgg-nav-bg: {{ section.settings.nav_bg_color }};
     --bgg-nav-text: {{ section.settings.nav_text_color }};
-    
     --bgg-heading-color: {{ section.settings.heading_color }};
     --bgg-text-color: {{ section.settings.text_color }};
     
-    /* Using CSS calc prevents locale comma issues in Liquid */
-    --bgg-overlay-color: {{ section.settings.overlay_color }};
-    --bgg-overlay-opacity: calc({{ section.settings.overlay_opacity }} / 100);
-
     /* Primary Button (Hero) */
     --bgg-btn-bg: {{ section.settings.btn_bg_color }};
     --bgg-btn-text: {{ section.settings.btn_text_color }};
@@ -61,6 +56,12 @@
     --bgg-ticker-speed: {{ section.settings.ticker_speed }}s;
   }
 
+  /* 🔥 OVERLAY FIX: Applied directly with calc to avoid browser/locale comma bugs 🔥 */
+  #bgg-{{ section.id }} .bgg-hero__overlay {
+    background-color: {{ section.settings.overlay_color | default: '#000000' }};
+    opacity: calc({{ section.settings.overlay_opacity | default: 15 }} * 0.01);
+  }
+
   /* ── Mobile Overrides ── */
   @media (max-width: 768px) {
     #bgg-{{ section.id }} {
@@ -76,20 +77,15 @@
   /* ── Reset & Structure ── */
   .bgg-section *, .bgg-section *::before, .bgg-section *::after { box-sizing: border-box; margin: 0; padding: 0; }
   .bgg-section {
-    position: relative;
-    width: 100%;
-    background-color: var(--bgg-nav-bg);
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    overflow: hidden;
+    position: relative; width: 100%; background-color: var(--bgg-nav-bg);
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; overflow: hidden;
   }
 
   /* ── Nav Bar ── */
   .bgg-nav {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 0 24px; height: var(--bgg-nav-height);
-    background: var(--bgg-nav-bg);
-    border-bottom: 1px solid rgba(0,0,0,0.08);
-    position: relative; z-index: 10;
+    padding: 0 24px; height: var(--bgg-nav-height); background: var(--bgg-nav-bg);
+    border-bottom: 1px solid rgba(0,0,0,0.08); position: relative; z-index: 10;
   }
   .bgg-nav__logo-link { display: flex; align-items: center; text-decoration: none; }
   .bgg-nav__logo-img { max-height: calc(var(--bgg-nav-height) - 16px); width: auto; object-fit: contain; }
@@ -129,17 +125,15 @@
     position: relative;
     height: var(--bgg-height-desktop);
     display: flex; align-items: flex-end; justify-content: var(--bgg-flex-desktop);
-    padding: 40px 32px calc(60px + 40px); /* Extra padding for ticker */
+    padding: 40px 32px calc(60px + 40px); /* Extra padding to avoid overlap with ticker */
   }
-  .bgg-hero__bg-wrap { position: absolute; inset: 0; z-index: 0; }
+  .bgg-hero__bg-wrap { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
   .bgg-hero__bg-wrap picture { display: block; width: 100%; height: 100%; }
   .bgg-hero__bg-img { width: 100%; height: 100%; object-fit: cover; display: block; }
   
   .bgg-hero__overlay {
-    position: absolute; inset: 0; z-index: 1;
-    background-color: var(--bgg-overlay-color);
-    opacity: var(--bgg-overlay-opacity);
-    pointer-events: none;
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;
+    pointer-events: none; /* Prevents overlay from blocking clicks */
   }
 
   /* Content */
