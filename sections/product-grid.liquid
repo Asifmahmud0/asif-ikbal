@@ -1,886 +1,310 @@
 {% comment %}
   ============================================================
-  Section: Product Grid + Popup
-  Description: 3×2 product photo grid. Each card shows a
-               product image with a "+" trigger button.
-               Clicking opens a popup showing product name,
-               price, description, colour swatches, size
-               dropdown and a functional Add-to-Cart button.
-
-               Special rule: if a variant with options
-               "Black" AND "Medium" is added to cart, the
-               "Soft Winter Jacket" is automatically added too.
-
-               • Vanilla JS only – zero jQuery
-               • All products selectable from the customizer
-               • Mobile responsive (2-col → 1-col)
+  Section: Product Grid + Popup (With Robust ATC Auto-Add)
   ============================================================
 {% endcomment %}
 
-<style>
-  /* ── Reset ── */
-  .pg-section *,
-  .pg-section *::before,
-  .pg-section *::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+{%- style -%}
+  /* Grid Aspect Ratio Variable based on Setting */
+  #pg-grid-{{ section.id }} .pg-card {
+    {% if section.settings.image_ratio == 'portrait' %}
+      aspect-ratio: 3 / 4;
+    {% elsif section.settings.image_ratio == 'square' %}
+      aspect-ratio: 1 / 1;
+    {% elsif section.settings.image_ratio == 'landscape' %}
+      aspect-ratio: 4 / 3;
+    {% else %}
+      height: {{ section.settings.custom_height }}px;
+    {% endif %}
   }
 
-  /* ── Root variables ── */
   .pg-section {
-    --pg-font-ui      : 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    --pg-font-heading : 'Georgia', serif;
-    --pg-color-black  : #111111;
-    --pg-color-white  : #ffffff;
-    --pg-color-bg     : #f5f5f0;
-    --pg-color-border : #d0d0d0;
-    --pg-color-overlay: rgba(180, 180, 175, 0.55);
-    --pg-color-yellow : #f5e130;
-    --pg-radius       : 0px;
-    --pg-gap          : 4px;
-
-    padding: 32px 24px 48px;
-    background: var(--pg-color-bg);
-    font-family: var(--pg-font-ui);
+    padding: 40px 24px; background: #f5f5f0; font-family: sans-serif;
   }
+  .pg-title { font-size: 16px; margin-bottom: 20px; color: #111; }
+  .pg-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  
+  /* Card */
+  .pg-card { position: relative; overflow: hidden; cursor: pointer; background: #eee; }
+  .pg-card__img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
+  .pg-card:hover .pg-card__img { transform: scale(1.05); }
+  .pg-card::after { content:''; position:absolute; inset:0; background:rgba(0,0,0,0); transition:0.3s; pointer-events:none; }
+  .pg-card:hover::after { background:rgba(0,0,0,0.1); }
 
-  /* ── Section title ── */
-  .pg-title {
-    font-family: var(--pg-font-ui);
-    font-size: 15px;
-    font-weight: 400;
-    color: var(--pg-color-black);
-    margin-bottom: 16px;
-    letter-spacing: 0.01em;
-  }
-
-  /* ── Grid ── */
-  .pg-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--pg-gap);
-  }
-
-  /* ── Card ── */
-  .pg-card {
-    position: relative;
-    overflow: hidden;
-    cursor: pointer;
-    aspect-ratio: 3 / 4;
-    background: #ccc;   /* placeholder while image loads */
-  }
-
-  .pg-card__img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  }
-
-  .pg-card:hover .pg-card__img {
-    transform: scale(1.04);
-  }
-
-  /* Dark overlay on hover */
-  .pg-card::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0);
-    transition: background 0.3s ease;
-    pointer-events: none;
-  }
-
-  .pg-card:hover::after {
-    background: rgba(0, 0, 0, 0.15);
-  }
-
-  /* "+" trigger button */
+  /* Plus Trigger */
   .pg-card__trigger {
-    position: absolute;
-    bottom: 12px;
-    left: 12px;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.92);
-    border: 1.5px solid rgba(0, 0, 0, 0.18);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    z-index: 2;
-    transition: background 0.2s ease, transform 0.2s ease;
-    font-size: 20px;
-    line-height: 1;
-    color: var(--pg-color-black);
-    font-weight: 300;
+    position: absolute; bottom: 12px; left: 12px; width: 32px; height: 32px;
+    border-radius: 50%; background: #fff; border: 1px solid #ddd;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; z-index: 2; transition: 0.2s; font-size: 20px; color: #111;
   }
+  .pg-card__trigger:hover { transform: scale(1.1); }
 
-  .pg-card__trigger:hover {
-    background: var(--pg-color-white);
-    transform: scale(1.1);
-  }
-
-  /* ── MODAL OVERLAY ── */
+  /* Modal */
   .pg-overlay {
-    position: fixed;
-    inset: 0;
-    background: var(--pg-color-overlay);
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.25s ease, visibility 0.25s ease;
-    padding: 16px;
+    position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; visibility: hidden; transition: 0.3s; padding: 16px;
   }
-
-  .pg-overlay.is-open {
-    opacity: 1;
-    visibility: visible;
-  }
-
-  /* ── POPUP CARD ── */
-  .pg-popup {
-    background: var(--pg-color-white);
-    width: 100%;
-    max-width: 460px;
-    padding: 24px;
-    position: relative;
-    transform: translateY(16px) scale(0.97);
-    transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
-                opacity 0.25s ease;
-    opacity: 0;
-    max-height: 90vh;
-    overflow-y: auto;
-  }
-
-  .pg-overlay.is-open .pg-popup {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
-
-  /* Close button */
-  .pg-popup__close {
-    position: absolute;
-    top: 14px;
-    right: 14px;
-    width: 28px;
-    height: 28px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 18px;
-    color: var(--pg-color-black);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0.6;
-    transition: opacity 0.2s;
-    z-index: 1;
-  }
-
-  .pg-popup__close:hover {
-    opacity: 1;
-  }
-
-  /* Product header row */
-  .pg-popup__head {
-    display: grid;
-    grid-template-columns: 80px 1fr;
-    gap: 14px;
-    margin-bottom: 20px;
-    padding-right: 28px; /* space for close btn */
-  }
-
-  .pg-popup__thumb {
-    width: 80px;
-    height: 80px;
-    object-fit: cover;
-    display: block;
-    flex-shrink: 0;
-  }
-
-  .pg-popup__meta {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    justify-content: center;
-  }
-
-  .pg-popup__name {
-    font-family: var(--pg-font-ui);
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--pg-color-black);
-    line-height: 1.3;
-  }
-
-  .pg-popup__price {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--pg-color-black);
-  }
-
-  .pg-popup__desc {
-    font-size: 12px;
-    line-height: 1.6;
-    color: #555;
-  }
-
-  /* Variant section label */
-  .pg-popup__label {
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    color: var(--pg-color-black);
-    margin-bottom: 8px;
-    display: block;
-  }
-
-  /* Color swatches (button grid) */
-  .pg-popup__colors {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 16px;
-  }
-
-  .pg-color-btn {
-    padding: 6px 16px;
-    border: 2px solid var(--pg-color-border);
-    background: var(--pg-color-white);
-    font-size: 12px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: border-color 0.15s ease, background 0.15s ease;
-    color: var(--pg-color-black);
-  }
-
-  .pg-color-btn.is-active,
-  .pg-color-btn:hover {
-    border-color: var(--pg-color-black);
-    background: var(--pg-color-black);
-    color: var(--pg-color-white);
-  }
-
-  /* Size dropdown */
-  .pg-popup__size-wrap {
-    position: relative;
-    margin-bottom: 20px;
-  }
-
-  .pg-size-select {
-    width: 100%;
-    padding: 10px 36px 10px 14px;
-    border: 1.5px solid var(--pg-color-border);
-    background: var(--pg-color-white);
-    font-family: var(--pg-font-ui);
-    font-size: 13px;
-    color: var(--pg-color-black);
-    appearance: none;
-    -webkit-appearance: none;
-    cursor: pointer;
-    transition: border-color 0.15s ease;
-  }
-
-  .pg-size-select:focus {
-    outline: none;
-    border-color: var(--pg-color-black);
-  }
-
-  /* Custom dropdown arrow */
-  .pg-popup__size-wrap::after {
-    content: '';
-    position: absolute;
-    right: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 10px;
-    height: 10px;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23111' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-size: contain;
-    pointer-events: none;
-  }
-
-  /* Add to Cart button */
+  .pg-overlay.is-open { opacity: 1; visibility: visible; }
+  .pg-popup { background: #fff; width: 100%; max-width: 420px; padding: 24px; position: relative; transform: translateY(20px); transition: 0.3s; opacity: 0; }
+  .pg-overlay.is-open .pg-popup { transform: translateY(0); opacity: 1; }
+  
+  .pg-popup__close { position: absolute; top: 10px; right: 14px; background: none; border: none; font-size: 20px; cursor: pointer; }
+  .pg-popup__head { display: flex; gap: 16px; margin-bottom: 20px; }
+  .pg-popup__thumb { width: 80px; height: 80px; object-fit: cover; }
+  .pg-popup__name { font-weight: bold; font-size: 15px; margin-bottom: 4px; }
+  .pg-popup__price { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .pg-popup__desc { font-size: 12px; color: #555; }
+  
+  .pg-popup__label { font-size: 12px; font-weight: bold; display: block; margin-bottom: 8px; text-transform: uppercase; }
+  .pg-popup__colors { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .pg-color-btn { padding: 6px 14px; border: 1px solid #ccc; background: #fff; font-size: 12px; cursor: pointer; }
+  .pg-color-btn.is-active { border-color: #111; background: #111; color: #fff; }
+  
+  .pg-size-select { width: 100%; padding: 10px; border: 1px solid #ccc; margin-bottom: 20px; font-size: 13px; }
+  
   .pg-popup__atc {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    width: 100%;
-    padding: 14px 24px;
-    background: var(--pg-color-black);
-    color: var(--pg-color-white);
-    border: 2px solid var(--pg-color-black);
-    font-family: var(--pg-font-ui);
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-    transition: color 0.3s ease;
+    width: 100%; padding: 14px; background: #111; color: #fff; border: none;
+    font-weight: bold; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;
+    transition: 0.2s;
   }
+  .pg-popup__atc:hover { background: #333; }
+  .pg-popup__atc.is-loading { opacity: 0.6; pointer-events: none; }
+  .pg-popup__atc.is-added { background: #2a9d5c; }
 
-  .pg-popup__atc::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: var(--pg-color-yellow);
-    transform: translateX(-101%);
-    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 0;
-  }
+  .pg-error { color: red; font-size: 12px; margin-top: 10px; }
 
-  .pg-popup__atc:hover::before {
-    transform: translateX(0);
-  }
-
-  .pg-popup__atc:hover {
-    color: var(--pg-color-black);
-  }
-
-  .pg-popup__atc span,
-  .pg-popup__atc svg {
-    position: relative;
-    z-index: 1;
-  }
-
-  .pg-popup__atc .pg-btn-arrow {
-    width: 18px;
-    height: 12px;
-    stroke: currentColor;
-    fill: none;
-    stroke-width: 2;
-    transition: transform 0.25s ease;
-  }
-
-  .pg-popup__atc:hover .pg-btn-arrow {
-    transform: translateX(4px);
-  }
-
-  /* Loading / feedback states */
-  .pg-popup__atc.is-loading {
-    pointer-events: none;
-    opacity: 0.7;
-  }
-
-  .pg-popup__atc.is-added {
-    background: #2a9d5c;
-    border-color: #2a9d5c;
-    color: var(--pg-color-white);
-  }
-
-  /* Error message */
-  .pg-popup__error {
-    font-size: 12px;
-    color: #c0392b;
-    margin-top: 8px;
-    min-height: 16px;
-  }
-
-  /* ── RESPONSIVE ── */
   @media (max-width: 768px) {
-    .pg-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-
-    .pg-section {
-      padding: 24px 12px 40px;
-    }
+    .pg-grid { grid-template-columns: repeat(2, 1fr); }
   }
-
   @media (max-width: 480px) {
-    .pg-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .pg-popup {
-      padding: 20px 16px;
-    }
+    .pg-grid { grid-template-columns: 1fr; }
   }
-</style>
+{%- endstyle -%}
 
-{%- comment -%} ── HTML ── {%- endcomment -%}
 <section class="pg-section" id="pg-{{ section.id }}">
-
-  <p class="pg-title">{{ section.settings.section_title }}</p>
-
+  <h2 class="pg-title">{{ section.settings.section_title }}</h2>
   <div class="pg-grid" id="pg-grid-{{ section.id }}">
     {%- for block in section.blocks -%}
-      {%- if block.type == 'product_card' -%}
-        {%- assign pg_product = block.settings.product -%}
-        {%- if pg_product != blank -%}
-          <div
-            class="pg-card"
-            data-product-handle="{{ pg_product.handle }}"
-            data-product-url="{{ routes.root_url }}products/{{ pg_product.handle }}.js"
-            {{ block.shopify_attributes }}
-          >
-            {%- if pg_product.featured_image -%}
-              <img
-                class="pg-card__img"
-                src="{{ pg_product.featured_image | img_url: '600x' }}"
-                alt="{{ pg_product.featured_image.alt | default: pg_product.title | escape }}"
-                loading="lazy"
-                width="600"
-                height="800"
-              >
-            {%- else -%}
-              <div class="pg-card__img" style="background:#ddd;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;">No image</div>
-            {%- endif -%}
-
-            <button
-              class="pg-card__trigger"
-              aria-label="Quick view {{ pg_product.title | escape }}"
-              data-handle="{{ pg_product.handle }}"
-            >+</button>
-          </div>
-        {%- endif -%}
+      {%- assign pg_product = block.settings.product -%}
+      {%- if pg_product != blank -%}
+        <div class="pg-card">
+          <img class="pg-card__img" src="{{ pg_product.featured_image | img_url: '600x' }}" alt="{{ pg_product.title | escape }}">
+          <button class="pg-card__trigger" data-handle="{{ pg_product.handle }}">+</button>
+        </div>
       {%- endif -%}
     {%- endfor -%}
   </div>
-
 </section>
 
-<!-- ── MODAL OVERLAY (shared, outside section for stacking context) ── -->
-<div class="pg-overlay" id="pg-overlay" role="dialog" aria-modal="true" aria-label="Product quick view">
-  <div class="pg-popup" id="pg-popup">
-
-    <button class="pg-popup__close" id="pg-close" aria-label="Close popup">&#x2715;</button>
-
-    <!-- Product header: thumbnail + name + price + short desc -->
+<!-- Modal Overlay -->
+<div class="pg-overlay" id="pg-overlay">
+  <div class="pg-popup">
+    <button class="pg-popup__close" id="pg-close">&#x2715;</button>
+    
     <div class="pg-popup__head">
-      <img class="pg-popup__thumb" id="pg-thumb" src="" alt="" width="80" height="80">
-      <div class="pg-popup__meta">
-        <p class="pg-popup__name" id="pg-name"></p>
-        <p class="pg-popup__price" id="pg-price"></p>
-        <p class="pg-popup__desc" id="pg-desc"></p>
+      <img class="pg-popup__thumb" id="pg-thumb" src="" alt="">
+      <div>
+        <div class="pg-popup__name" id="pg-name"></div>
+        <div class="pg-popup__price" id="pg-price"></div>
+        <div class="pg-popup__desc" id="pg-desc"></div>
       </div>
     </div>
 
-    <!-- Colour option (rendered dynamically) -->
     <div id="pg-color-section" style="display:none;">
       <span class="pg-popup__label" id="pg-color-label">Color</span>
       <div class="pg-popup__colors" id="pg-color-buttons"></div>
     </div>
 
-    <!-- Size option (rendered dynamically) -->
     <div id="pg-size-section" style="display:none;">
       <span class="pg-popup__label" id="pg-size-label">Size</span>
-      <div class="pg-popup__size-wrap">
-        <select class="pg-size-select" id="pg-size-select" aria-label="Choose size"></select>
-      </div>
+      <select class="pg-size-select" id="pg-size-select"></select>
     </div>
 
-    <!-- Add to Cart -->
-    <button class="pg-popup__atc" id="pg-atc">
-      <span id="pg-atc-text">ADD TO CART</span>
-      <svg class="pg-btn-arrow" viewBox="0 0 18 12" aria-hidden="true">
-        <path d="M0 6h16M11 1l5 5-5 5"/>
-      </svg>
-    </button>
-
-    <p class="pg-popup__error" id="pg-error"></p>
+    <button class="pg-popup__atc" id="pg-atc">ADD TO CART</button>
+    <div class="pg-error" id="pg-error"></div>
   </div>
 </div>
 
 <script>
-/**
- * Product Grid Popup Script
- * ─────────────────────────
- * Responsibilities:
- *  1. Intercept "+" button clicks on each card.
- *  2. Fetch the product JSON from Shopify's storefront API.
- *  3. Render the popup with variants (colour swatches + size dropdown).
- *  4. Add selected variant to cart via AJAX.
- *  5. Special rule: if the selected variant has options "Black" AND "Medium",
- *     also add the "Soft Winter Jacket" to the cart automatically.
- */
-(function () {
-  'use strict';
-
-  /* ── Constants ── */
-  var OVERLAY     = document.getElementById('pg-overlay');
-  var POPUP       = document.getElementById('pg-popup');
-  var CLOSE_BTN   = document.getElementById('pg-close');
-  var THUMB       = document.getElementById('pg-thumb');
-  var NAME_EL     = document.getElementById('pg-name');
-  var PRICE_EL    = document.getElementById('pg-price');
-  var DESC_EL     = document.getElementById('pg-desc');
-  var COLOR_SEC   = document.getElementById('pg-color-section');
-  var COLOR_LABEL = document.getElementById('pg-color-label');
-  var COLOR_BTNS  = document.getElementById('pg-color-buttons');
-  var SIZE_SEC    = document.getElementById('pg-size-section');
-  var SIZE_LABEL  = document.getElementById('pg-size-label');
-  var SIZE_SEL    = document.getElementById('pg-size-select');
-  var ATC_BTN     = document.getElementById('pg-atc');
-  var ATC_TEXT    = document.getElementById('pg-atc-text');
-  var ERROR_EL    = document.getElementById('pg-error');
-
-  /* Handle of the "Soft Winter Jacket" product for auto-add */
-  var WINTER_JACKET_HANDLE = 'soft-winter-jacket';
-
-  /* Currently loaded product data */
-  var currentProduct = null;
-
-  /* Chosen option values keyed by option name (lowercase) */
+(function() {
+  // Store Liquid ID of the Soft Winter Jacket for bulletproof fetching
+  var BONUS_PRODUCT_ID = {{ section.settings.auto_add_product.selected_or_first_available_variant.id | default: 'null' }};
+  
+  var activeProduct = null;
   var selectedOptions = {};
 
-  /* ── Format money (cents → display string) ── */
-  function formatMoney(cents) {
-    return (cents / 100).toFixed(2) + '\u20AC';
+  var overlay = document.getElementById('pg-overlay');
+  var closeBtn = document.getElementById('pg-close');
+  var atcBtn = document.getElementById('pg-atc');
+  var errorEl = document.getElementById('pg-error');
+  var sizeSel = document.getElementById('pg-size-select');
+
+  function formatMoney(cents) { return (cents / 100).toFixed(2) + '€'; }
+
+  // Fallback API fetch if liquid ID is not set
+  function getJacketVariantId() {
+    if (BONUS_PRODUCT_ID) return Promise.resolve(BONUS_PRODUCT_ID);
+    return fetch('/products/soft-winter-jacket.js')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => d && d.variants ? d.variants[0].id : null)
+      .catch(() => null);
   }
 
-  /* ── Find the matching variant for current selectedOptions ── */
-  function findMatchingVariant() {
-    if (!currentProduct) return null;
-
-    return currentProduct.variants.find(function (v) {
-      return currentProduct.options.every(function (optName, idx) {
-        var key = optName.toLowerCase();
-        return !selectedOptions[key] || v['option' + (idx + 1)] === selectedOptions[key];
-      });
-    }) || null;
-  }
-
-  /* ── Open popup and populate with product data ── */
+  // Opens popup and parses product JSON
   function openPopup(product) {
-    currentProduct  = product;
+    activeProduct = product;
     selectedOptions = {};
-    ERROR_EL.textContent = '';
+    errorEl.textContent = '';
+    
+    document.getElementById('pg-thumb').src = product.images[0] || '';
+    document.getElementById('pg-name').textContent = product.title;
+    document.getElementById('pg-price').textContent = formatMoney(product.variants[0].price);
+    
+    var tempDiv = document.createElement('div'); tempDiv.innerHTML = product.description;
+    document.getElementById('pg-desc').textContent = tempDiv.textContent.slice(0, 100) + '...';
 
-    /* ── Basic info ── */
-    var featImg = product.images && product.images[0]
-      ? product.images[0].src
-      : '';
-    THUMB.src      = featImg;
-    THUMB.alt      = product.title;
-    NAME_EL.textContent  = product.title;
-    PRICE_EL.textContent = formatMoney(product.variants[0].price);
+    var colorSec = document.getElementById('pg-color-section');
+    var colorBtns = document.getElementById('pg-color-buttons');
+    var sizeSec = document.getElementById('pg-size-section');
+    
+    colorSec.style.display = 'none'; sizeSec.style.display = 'none';
+    colorBtns.innerHTML = ''; sizeSel.innerHTML = '<option value="">Choose Size</option>';
 
-    /* Strip HTML tags from description for plain-text display */
-    var tmp = document.createElement('div');
-    tmp.innerHTML = product.description;
-    var plain = tmp.textContent || tmp.innerText || '';
-    DESC_EL.textContent = plain.length > 120 ? plain.slice(0, 120) + '\u2026' : plain;
-
-    /* ── Render option groups dynamically ── */
-    product.options.forEach(function (optName) {
-      var key        = optName.toLowerCase();
-      var values     = getUniqueOptionValues(product, optName);
-      var isColour   = /colou?r/i.test(optName);
-      var isSize     = /size/i.test(optName);
-
-      if (isColour) {
-        COLOR_LABEL.textContent = optName;
-        COLOR_BTNS.innerHTML    = '';
-
-        values.forEach(function (val, i) {
+    product.options.forEach(function(opt) {
+      var name = opt.name.toLowerCase();
+      if(name.includes('color') || name.includes('colour')) {
+        opt.values.forEach(function(val, idx) {
           var btn = document.createElement('button');
-          btn.className       = 'pg-color-btn' + (i === 0 ? ' is-active' : '');
-          btn.textContent     = val;
-          btn.dataset.value   = val;
-          btn.dataset.optkey  = key;
-          btn.addEventListener('click', function () {
-            /* Deactivate siblings */
-            COLOR_BTNS.querySelectorAll('.pg-color-btn').forEach(function (b) {
-              b.classList.remove('is-active');
-            });
+          btn.className = 'pg-color-btn' + (idx===0 ? ' is-active':'');
+          btn.textContent = val;
+          if(idx===0) selectedOptions[name] = val;
+          
+          btn.onclick = function() {
+            colorBtns.querySelectorAll('.pg-color-btn').forEach(b => b.classList.remove('is-active'));
             btn.classList.add('is-active');
-            selectedOptions[key] = val;
-            updatePriceFromVariant();
-          });
-          COLOR_BTNS.appendChild(btn);
-
-          /* Pre-select first */
-          if (i === 0) selectedOptions[key] = val;
+            selectedOptions[name] = val;
+            updateVariantPrice();
+          };
+          colorBtns.appendChild(btn);
         });
-
-        COLOR_SEC.style.display = 'block';
-      } else if (isSize) {
-        SIZE_LABEL.textContent = optName;
-        SIZE_SEL.innerHTML     = '<option value="">Choose your size</option>';
-
-        values.forEach(function (val) {
-          var opt   = document.createElement('option');
-          opt.value = val;
-          opt.textContent = val;
-          SIZE_SEL.appendChild(opt);
-        });
-
-        SIZE_SEC.style.display = 'block';
+        colorSec.style.display = 'block';
       }
-      /* Any additional non-colour/size options are ignored in the UI
-         but can be extended here if needed */
-    });
-
-    /* ── Show overlay ── */
-    OVERLAY.classList.add('is-open');
-    document.body.style.overflow = 'hidden';
-    CLOSE_BTN.focus();
-  }
-
-  /* ── Update displayed price when variant changes ── */
-  function updatePriceFromVariant() {
-    var v = findMatchingVariant();
-    if (v) PRICE_EL.textContent = formatMoney(v.price);
-  }
-
-  /* ── Close popup ── */
-  function closePopup() {
-    OVERLAY.classList.remove('is-open');
-    document.body.style.overflow = '';
-    currentProduct  = null;
-    selectedOptions = {};
-
-    /* Reset sections visibility for next product */
-    COLOR_SEC.style.display = 'none';
-    SIZE_SEC.style.display  = 'none';
-
-    /* Reset ATC button */
-    resetAtcButton();
-  }
-
-  function resetAtcButton() {
-    ATC_BTN.classList.remove('is-loading', 'is-added');
-    ATC_BTN.disabled     = false;
-    ATC_TEXT.textContent = 'ADD TO CART';
-    ERROR_EL.textContent = '';
-  }
-
-  /* ── Get unique values for a given option name ── */
-  function getUniqueOptionValues(product, optName) {
-    var idx = product.options.indexOf(optName);
-    if (idx < 0) return [];
-    var key   = 'option' + (idx + 1);
-    var seen  = {};
-    var vals  = [];
-    product.variants.forEach(function (v) {
-      if (!seen[v[key]]) {
-        seen[v[key]] = true;
-        vals.push(v[key]);
+      else if(name.includes('size')) {
+        opt.values.forEach(function(val) {
+          var option = document.createElement('option'); option.value = val; option.textContent = val;
+          sizeSel.appendChild(option);
+        });
+        sizeSec.style.display = 'block';
       }
     });
-    return vals;
+
+    overlay.classList.add('is-open');
   }
 
-  /* ── Fetch product JSON ── */
-  function fetchProduct(handle) {
-    return fetch('/products/' + handle + '.js')
-      .then(function (res) {
-        if (!res.ok) throw new Error('Product not found');
-        return res.json();
+  function updateVariantPrice() {
+    var v = getSelectedVariant();
+    if (v) document.getElementById('pg-price').textContent = formatMoney(v.price);
+  }
+
+  function getSelectedVariant() {
+    return activeProduct.variants.find(function(v) {
+      return activeProduct.options.every(function(opt, i) {
+        var optName = opt.name.toLowerCase();
+        var selectedVal = selectedOptions[optName];
+        if(!selectedVal && optName.includes('size')) selectedVal = sizeSel.value;
+        return !selectedVal || v['option' + (i+1)] === selectedVal;
       });
-  }
-
-  /* ── Add item(s) to cart ── */
-  function addToCart(items) {
-    return fetch('/cart/add.js', {
-      method  : 'POST',
-      headers : { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body    : JSON.stringify({ items: items })
-    }).then(function (res) {
-      if (!res.ok) {
-        return res.json().then(function (d) {
-          throw new Error(d.description || 'Could not add to cart');
-        });
-      }
-      return res.json();
     });
   }
 
-  /* ── Fetch the Soft Winter Jacket variant id ── */
-  function fetchWinterJacketVariantId() {
-    return fetch('/products/' + WINTER_JACKET_HANDLE + '.js')
-      .then(function (res) {
-        if (!res.ok) return null;   /* product may not exist in store */
-        return res.json();
-      })
-      .then(function (p) {
-        return p && p.variants && p.variants[0] ? p.variants[0].id : null;
-      })
-      .catch(function () { return null; });
-  }
+  // --- ADD TO CART LOGIC WITH RULE ---
+  atcBtn.addEventListener('click', function() {
+    var sizeSecVisible = document.getElementById('pg-size-section').style.display === 'block';
+    if(sizeSecVisible && !sizeSel.value) return errorEl.textContent = "Please select a size.";
+    
+    var variant = getSelectedVariant();
+    if(!variant) return errorEl.textContent = "Unavailable.";
 
-  /* ── Handle ATC click ── */
-  ATC_BTN.addEventListener('click', function () {
-    if (!currentProduct) return;
+    errorEl.textContent = "";
+    atcBtn.classList.add('is-loading'); atcBtn.textContent = "ADDING...";
 
-    var selectedColor = selectedOptions['color'] || selectedOptions['colour'] || null;
-    var selectedSize  = SIZE_SEL.value || null;
+    // 1. Gather all selected options into an array, lowercase to ensure perfect matching
+    var vOpts = [variant.option1, variant.option2, variant.option3].filter(Boolean).map(o => o.toLowerCase().trim());
+    
+    // 2. The Rule: Check if 'black' AND 'medium' are both present
+    var isBlackAndMedium = vOpts.includes('black') && vOpts.includes('medium');
 
-    /* If size option exists, user must pick one */
-    if (SIZE_SEC.style.display !== 'none' && !selectedSize) {
-      ERROR_EL.textContent = 'Please choose a size.';
-      SIZE_SEL.focus();
-      return;
-    }
+    var cartItems = [{ id: variant.id, quantity: 1 }];
 
-    /* Find the matching variant */
-    var variant = findMatchingVariant();
+    var jacketPromise = isBlackAndMedium ? getJacketVariantId() : Promise.resolve(null);
 
-    /* If size was selected from dropdown, re-resolve with it */
-    if (selectedSize) {
-      currentProduct.options.forEach(function (optName, idx) {
-        if (/size/i.test(optName)) {
-          selectedOptions[optName.toLowerCase()] = selectedSize;
-        }
+    jacketPromise.then(function(bonusId) {
+      if(bonusId) cartItems.push({ id: bonusId, quantity: 1 });
+
+      // Shopify multiple-item JSON payload format
+      return fetch(window.Shopify && window.Shopify.routes ? window.Shopify.routes.root + 'cart/add.js' : '/cart/add.js', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: cartItems })
       });
-      variant = findMatchingVariant();
-    }
-
-    if (!variant) {
-      ERROR_EL.textContent = 'This combination is unavailable.';
-      return;
-    }
-
-    ERROR_EL.textContent = '';
-    ATC_BTN.classList.add('is-loading');
-    ATC_BTN.disabled    = true;
-    ATC_TEXT.textContent = 'Adding…';
-
-    /* ── Build cart items array ── */
-    var items = [{ id: variant.id, quantity: 1 }];
-
-    /**
-     * Special rule:
-     * If the selected variant has BOTH option values "Black" AND "Medium"
-     * (case-insensitive), also add the "Soft Winter Jacket" to the cart.
-     */
-    var optionValues = [
-      variant.option1,
-      variant.option2,
-      variant.option3
-    ].filter(Boolean).map(function (v) { return v.toLowerCase(); });
-
-    var isBlack  = optionValues.indexOf('black')  > -1;
-    var isMedium = optionValues.indexOf('medium') > -1;
-
-    var jacketPromise = (isBlack && isMedium)
-      ? fetchWinterJacketVariantId()
-      : Promise.resolve(null);
-
-    jacketPromise.then(function (jacketVariantId) {
-      if (jacketVariantId) {
-        items.push({ id: jacketVariantId, quantity: 1 });
-      }
-      return addToCart(items);
     })
-    .then(function () {
-      ATC_BTN.classList.remove('is-loading');
-      ATC_BTN.classList.add('is-added');
-      ATC_TEXT.textContent = '✓ Added!';
+    .then(r => r.json())
+    .then(function() {
+      atcBtn.classList.remove('is-loading'); atcBtn.classList.add('is-added');
+      atcBtn.textContent = "ADDED!";
+      
+      // Update Dawn Cart Drawer smoothly
+      window.dispatchEvent(new Event('cart:updated'));
+      document.documentElement.dispatchEvent(new CustomEvent('cart:change', {bubbles: true}));
 
-      /* Close popup after short delay */
-      setTimeout(function () {
-        closePopup();
-      }, 1200);
-    })
-    .catch(function (err) {
-      ATC_BTN.classList.remove('is-loading');
-      ATC_BTN.disabled     = false;
-      ATC_TEXT.textContent = 'ADD TO CART';
-      ERROR_EL.textContent = err.message || 'Something went wrong.';
+      setTimeout(function() {
+        overlay.classList.remove('is-open');
+        atcBtn.classList.remove('is-added'); atcBtn.textContent = "ADD TO CART";
+      }, 1000);
+    }).catch(function(e) {
+      atcBtn.classList.remove('is-loading'); atcBtn.textContent = "ADD TO CART";
+      errorEl.textContent = "Failed to add. Please try again.";
     });
   });
 
-  /* ── Size dropdown change → update price display ── */
-  SIZE_SEL.addEventListener('change', function () {
-    var sizeOptName = '';
-    if (currentProduct) {
-      currentProduct.options.forEach(function (n) {
-        if (/size/i.test(n)) sizeOptName = n.toLowerCase();
-      });
-    }
-    if (sizeOptName) selectedOptions[sizeOptName] = SIZE_SEL.value;
-    updatePriceFromVariant();
-  });
-
-  /* ── Delegate click on all grid trigger buttons ── */
-  document.addEventListener('click', function (e) {
-    var trigger = e.target.closest('.pg-card__trigger');
-    if (!trigger) return;
-
-    var handle = trigger.dataset.handle;
-    if (!handle) return;
-
-    /* Show loading state */
-    ATC_TEXT.textContent = 'ADD TO CART';
-    resetAtcButton();
-
-    fetchProduct(handle)
-      .then(openPopup)
-      .catch(function (err) {
-        console.error('[ProductGrid] Could not load product:', err);
-      });
-  });
-
-  /* ── Close on overlay background click ── */
-  OVERLAY.addEventListener('click', function (e) {
-    if (e.target === OVERLAY) closePopup();
-  });
-
-  /* ── Close on button ── */
-  CLOSE_BTN.addEventListener('click', closePopup);
-
-  /* ── Close on Escape key ── */
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && OVERLAY.classList.contains('is-open')) {
-      closePopup();
+  document.addEventListener('click', function(e) {
+    if(e.target.closest('.pg-card__trigger')) {
+      var handle = e.target.closest('.pg-card__trigger').dataset.handle;
+      fetch('/products/' + handle + '.js').then(r => r.json()).then(openPopup);
     }
   });
 
-}());
+  closeBtn.addEventListener('click', () => overlay.classList.remove('is-open'));
+  overlay.addEventListener('click', (e) => { if(e.target === overlay) overlay.classList.remove('is-open'); });
+  sizeSel.addEventListener('change', updateVariantPrice);
+
+})();
 </script>
 
 {% schema %}
 {
   "name": "Product Grid",
-  "tag": "section",
-  "class": "pg-section-wrapper",
   "settings": [
+    { "type": "text", "id": "section_title", "label": "Title", "default": "Tisso Vison in the wild" },
     {
-      "type": "text",
-      "id": "section_title",
-      "label": "Section title",
-      "default": "Tisso vison in the wild"
-    }
+      "type": "select", "id": "image_ratio", "label": "Image Aspect Ratio",
+      "options": [
+        { "value": "portrait", "label": "Portrait (3:4)" },
+        { "value": "square", "label": "Square (1:1)" },
+        { "value": "landscape", "label": "Landscape (4:3)" },
+        { "value": "custom", "label": "Custom Height" }
+      ],
+      "default": "portrait"
+    },
+    { "type": "range", "id": "custom_height", "min": 200, "max": 600, "step": 10, "unit": "px", "label": "Custom Image Height", "default": 400 },
+    { "type": "header", "content": "Special Cart Rule" },
+    { "type": "product", "id": "auto_add_product", "label": "Free Product (Soft Winter Jacket)", "info": "This product will automatically be added when a user selects 'Black' and 'Medium' variants." }
   ],
   "blocks": [
-    {
-      "type": "product_card",
-      "name": "Product Card",
-      "limit": 6,
-      "settings": [
-        {
-          "type": "product",
-          "id": "product",
-          "label": "Product"
-        }
-      ]
-    }
+    { "type": "product_card", "name": "Product", "limit": 6, "settings": [ { "type": "product", "id": "product", "label": "Product" } ] }
   ],
-  "presets": [
-    {
-      "name": "Product Grid",
-      "blocks": [
-        { "type": "product_card" },
-        { "type": "product_card" },
-        { "type": "product_card" },
-        { "type": "product_card" },
-        { "type": "product_card" },
-        { "type": "product_card" }
-      ]
-    }
-  ]
+  "presets": [{ "name": "Product Grid" }]
 }
 {% endschema %}
