@@ -9,62 +9,6 @@
  */
 {
   "sections": {
-    "product_grid_kYkrbN": {
-      "type": "product-grid",
-      "blocks": {
-        "product_card_jeLFNF": {
-          "type": "product_card",
-          "settings": {
-            "product": "black-leather-bag"
-          }
-        },
-        "product_card_eHLE8k": {
-          "type": "product_card",
-          "settings": {
-            "product": ""
-          }
-        },
-        "product_card_y8qD8M": {
-          "type": "product_card",
-          "settings": {
-            "product": ""
-          }
-        },
-        "product_card_tLkxP9": {
-          "type": "product_card",
-          "settings": {
-            "product": ""
-          }
-        },
-        "product_card_GwQPUn": {
-          "type": "product_card",
-          "settings": {
-            "product": ""
-          }
-        },
-        "product_card_fYybCb": {
-          "type": "product_card",
-          "settings": {
-            "product": ""
-          }
-        }
-      },
-      "block_order": [
-        "product_card_jeLFNF",
-        "product_card_eHLE8k",
-        "product_card_y8qD8M",
-        "product_card_tLkxP9",
-        "product_card_GwQPUn",
-        "product_card_fYybCb"
-      ],
-      "name": "Product Grid",
-      "settings": {
-        "section_title": "Tisso vison in the wild",
-        "image_ratio": "custom",
-        "custom_height": 410,
-        "auto_add_product": "black-leather-bag"
-      }
-    },
     "custom_banner_section_qTzTny": {
       "type": "custom-banner-section",
       "name": "Custom – Banner Section",
@@ -114,6 +58,62 @@
         "ticker_speed": 25,
         "ticker_size_desk": 12,
         "ticker_size_mob": 10
+      }
+    },
+    "product_grid_kYkrbN": {
+      "type": "product-grid",
+      "blocks": {
+        "product_card_jeLFNF": {
+          "type": "product_card",
+          "settings": {
+            "product": "black-leather-bag"
+          }
+        },
+        "product_card_eHLE8k": {
+          "type": "product_card",
+          "settings": {
+            "product": "dark-denim-top"
+          }
+        },
+        "product_card_y8qD8M": {
+          "type": "product_card",
+          "settings": {
+            "product": "floral-white-top"
+          }
+        },
+        "product_card_tLkxP9": {
+          "type": "product_card",
+          "settings": {
+            "product": ""
+          }
+        },
+        "product_card_GwQPUn": {
+          "type": "product_card",
+          "settings": {
+            "product": ""
+          }
+        },
+        "product_card_fYybCb": {
+          "type": "product_card",
+          "settings": {
+            "product": ""
+          }
+        }
+      },
+      "block_order": [
+        "product_card_jeLFNF",
+        "product_card_eHLE8k",
+        "product_card_y8qD8M",
+        "product_card_tLkxP9",
+        "product_card_GwQPUn",
+        "product_card_fYybCb"
+      ],
+      "name": "Product Grid",
+      "settings": {
+        "section_title": "Tisso vison in the wild",
+        "image_ratio": "custom",
+        "custom_height": 410,
+        "auto_add_product": "black-leather-bag"
       }
     }
   },
