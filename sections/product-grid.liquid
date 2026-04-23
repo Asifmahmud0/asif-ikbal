@@ -6,7 +6,7 @@
 
 {%- style -%}
   #pg-{{ section.id }} {
-    /* ── Section Layout ── */
+    /* ── Desktop Section Layout ── */
     padding-top: {{ section.settings.pad_t }}px;
     padding-bottom: {{ section.settings.pad_b }}px;
     padding-left: {{ section.settings.pad_l }}px;
@@ -53,11 +53,11 @@
 
   /* Plus Icon Positions */
   .pg-card__trigger {
-    position: absolute; width: 36px; height: 36px;
+    position: absolute; width: 32px; height: 32px;
     border-radius: 50%; background: #fff; border: 1px solid #ddd;
     display: flex; align-items: center; justify-content: center;
     cursor: pointer; z-index: 2; transition: background 0.2s, color 0.2s, transform 0.2s;
-    font-size: 22px; color: #111; line-height: 1;
+    font-size: 20px; color: #111; line-height: 1;
   }
   .pg-card__trigger:hover { background: #111; color: #fff; }
 
@@ -65,16 +65,16 @@
     .pg-card__trigger { top: 50%; left: 50%; transform: translate(-50%, -50%); }
     .pg-card__trigger:hover { transform: translate(-50%, -50%) scale(1.1); }
   {% elsif section.settings.icon_pos == 'top-left' %}
-    .pg-card__trigger { top: 12px; left: 12px; }
+    .pg-card__trigger { top: 10px; left: 10px; }
     .pg-card__trigger:hover { transform: scale(1.1); }
   {% elsif section.settings.icon_pos == 'top-right' %}
-    .pg-card__trigger { top: 12px; right: 12px; }
+    .pg-card__trigger { top: 10px; right: 10px; }
     .pg-card__trigger:hover { transform: scale(1.1); }
   {% elsif section.settings.icon_pos == 'bottom-left' %}
-    .pg-card__trigger { bottom: 12px; left: 12px; }
+    .pg-card__trigger { bottom: 10px; left: 10px; }
     .pg-card__trigger:hover { transform: scale(1.1); }
   {% elsif section.settings.icon_pos == 'bottom-right' %}
-    .pg-card__trigger { bottom: 12px; right: 12px; }
+    .pg-card__trigger { bottom: 10px; right: 10px; }
     .pg-card__trigger:hover { transform: scale(1.1); }
   {% endif %}
 
@@ -181,11 +181,21 @@
 
   /* ── Mobile Overrides ── */
   @media (max-width: 768px) {
-    #pg-grid-{{ section.id }} { grid-template-columns: repeat(2, 1fr); }
-    #pg-{{ section.id }} .pg-title { font-size: {{ section.settings.head_size_m }}px; }
-  }
-  @media (max-width: 480px) {
-    #pg-grid-{{ section.id }} { grid-template-columns: 1fr; }
+    #pg-{{ section.id }} {
+      padding-top: {{ section.settings.pad_t_m }}px;
+      padding-bottom: {{ section.settings.pad_b_m }}px;
+      padding-left: {{ section.settings.pad_l_m }}px;
+      padding-right: {{ section.settings.pad_r_m }}px;
+    }
+    
+    /* Forces 2 columns on mobile, matching user screenshot */
+    #pg-grid-{{ section.id }} { 
+      grid-template-columns: repeat(2, 1fr); 
+    }
+    
+    #pg-{{ section.id }} .pg-title { 
+      font-size: {{ section.settings.head_size_m }}px; 
+    }
   }
 {%- endstyle -%}
 
@@ -404,13 +414,19 @@
 {
   "name": "Product Grid",
   "settings": [
-    { "type": "header", "content": "Section Layout" },
+    { "type": "header", "content": "Section Layout (Desktop)" },
     { "type": "color", "id": "bg_color", "label": "Background Color", "default": "#f5f5f0" },
     { "type": "range", "id": "pad_t", "min": 0, "max": 100, "step": 5, "unit": "px", "label": "Padding Top", "default": 40 },
     { "type": "range", "id": "pad_b", "min": 0, "max": 100, "step": 5, "unit": "px", "label": "Padding Bottom", "default": 40 },
     { "type": "range", "id": "pad_l", "min": 0, "max": 100, "step": 5, "unit": "px", "label": "Padding Left", "default": 25 },
     { "type": "range", "id": "pad_r", "min": 0, "max": 100, "step": 5, "unit": "px", "label": "Padding Right", "default": 25 },
     { "type": "range", "id": "grid_gap", "min": 0, "max": 40, "step": 2, "unit": "px", "label": "Grid Spacing", "default": 8 },
+
+    { "type": "header", "content": "Section Layout (Mobile)" },
+    { "type": "range", "id": "pad_t_m", "min": 0, "max": 100, "step": 5, "unit": "px", "label": "Padding Top (Mobile)", "default": 20 },
+    { "type": "range", "id": "pad_b_m", "min": 0, "max": 100, "step": 5, "unit": "px", "label": "Padding Bottom (Mobile)", "default": 20 },
+    { "type": "range", "id": "pad_l_m", "min": 0, "max": 100, "step": 5, "unit": "px", "label": "Padding Left (Mobile)", "default": 10 },
+    { "type": "range", "id": "pad_r_m", "min": 0, "max": 100, "step": 5, "unit": "px", "label": "Padding Right (Mobile)", "default": 10 },
 
     { "type": "header", "content": "Heading Settings" },
     { "type": "text", "id": "section_title", "label": "Title Text", "default": "Tisso Vison in the wild" },
