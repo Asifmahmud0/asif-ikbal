@@ -63,28 +63,10 @@
     "custom_products_grid_P6FRMD": {
       "type": "custom-products-grid",
       "blocks": {
-        "product_card_dKzcr3": {
+        "product_card_NqJXQA": {
           "type": "product_card",
           "settings": {
-            "product": "dark-denim-top"
-          }
-        },
-        "product_card_tJPgNd": {
-          "type": "product_card",
-          "settings": {
-            "product": "classic-varsity-top"
-          }
-        },
-        "product_card_8ycDWx": {
-          "type": "product_card",
-          "settings": {
-            "product": "classic-leather-jacket"
-          }
-        },
-        "product_card_jEgPVr": {
-          "type": "product_card",
-          "settings": {
-            "product": "chequered-red-shirt"
+            "product": "black-leather-bag"
           }
         },
         "product_card_cHRJ3W": {
@@ -93,20 +75,38 @@
             "product": "blue-silk-tuxedo"
           }
         },
-        "product_card_NqJXQA": {
+        "product_card_jEgPVr": {
           "type": "product_card",
           "settings": {
-            "product": "black-leather-bag"
+            "product": "chequered-red-shirt"
+          }
+        },
+        "product_card_8ycDWx": {
+          "type": "product_card",
+          "settings": {
+            "product": "classic-leather-jacket"
+          }
+        },
+        "product_card_tJPgNd": {
+          "type": "product_card",
+          "settings": {
+            "product": "classic-varsity-top"
+          }
+        },
+        "product_card_dKzcr3": {
+          "type": "product_card",
+          "settings": {
+            "product": "dark-denim-top"
           }
         }
       },
       "block_order": [
-        "product_card_dKzcr3",
-        "product_card_tJPgNd",
-        "product_card_8ycDWx",
-        "product_card_jEgPVr",
+        "product_card_NqJXQA",
         "product_card_cHRJ3W",
-        "product_card_NqJXQA"
+        "product_card_jEgPVr",
+        "product_card_8ycDWx",
+        "product_card_tJPgNd",
+        "product_card_dKzcr3"
       ],
       "name": "Custom Product Grid",
       "settings": {
@@ -115,7 +115,7 @@
         "pad_b": 40,
         "pad_l": 25,
         "pad_r": 25,
-        "grid_gap": 8,
+        "grid_gap": 20,
         "pad_t_m": 20,
         "pad_b_m": 20,
         "pad_l_m": 10,
