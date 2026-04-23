@@ -122,7 +122,7 @@
         "head_size_m": 16,
         "head_align": "left",
         "image_ratio": "custom",
-        "custom_height": 410,
+        "custom_height": 480,
         "icon_pos": "center",
         "pop_align": "left",
         "pop_img_w": 80,
