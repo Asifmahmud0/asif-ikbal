@@ -15,7 +15,7 @@
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   }
 
-  /* ── Grid Settings ── */
+  /* ── Grid Settings (Desktop) ── */
   #pg-grid-{{ section.id }} {
     display: grid;
     gap: {{ section.settings.grid_gap }}px;
@@ -188,10 +188,18 @@
       padding-right: {{ section.settings.pad_r_m }}px;
     }
     
-    /* Forces 2 columns on mobile, matching user screenshot */
+    /* Forces 2 columns on mobile with custom mobile gap */
     #pg-grid-{{ section.id }} { 
       grid-template-columns: repeat(2, 1fr); 
+      gap: {{ section.settings.grid_gap_m }}px;
     }
+
+    {% if section.settings.image_ratio == 'custom' %}
+      /* Custom Height specifically for Mobile */
+      #pg-grid-{{ section.id }} .pg-card {
+        height: {{ section.settings.custom_height_m }}px;
+      }
+    {% endif %}
     
     #pg-{{ section.id }} .pg-title { 
       font-size: {{ section.settings.head_size_m }}px; 
@@ -420,13 +428,14 @@
     { "type": "range", "id": "pad_b", "min": 0, "max": 100, "step": 5, "unit": "px", "label": "Padding Bottom", "default": 40 },
     { "type": "range", "id": "pad_l", "min": 0, "max": 100, "step": 5, "unit": "px", "label": "Padding Left", "default": 25 },
     { "type": "range", "id": "pad_r", "min": 0, "max": 100, "step": 5, "unit": "px", "label": "Padding Right", "default": 25 },
-    { "type": "range", "id": "grid_gap", "min": 0, "max": 40, "step": 2, "unit": "px", "label": "Grid Spacing", "default": 8 },
+    { "type": "range", "id": "grid_gap", "min": 0, "max": 40, "step": 2, "unit": "px", "label": "Grid Spacing (Desktop)", "default": 8 },
 
     { "type": "header", "content": "Section Layout (Mobile)" },
     { "type": "range", "id": "pad_t_m", "min": 0, "max": 100, "step": 5, "unit": "px", "label": "Padding Top (Mobile)", "default": 20 },
     { "type": "range", "id": "pad_b_m", "min": 0, "max": 100, "step": 5, "unit": "px", "label": "Padding Bottom (Mobile)", "default": 20 },
     { "type": "range", "id": "pad_l_m", "min": 0, "max": 100, "step": 5, "unit": "px", "label": "Padding Left (Mobile)", "default": 10 },
     { "type": "range", "id": "pad_r_m", "min": 0, "max": 100, "step": 5, "unit": "px", "label": "Padding Right (Mobile)", "default": 10 },
+    { "type": "range", "id": "grid_gap_m", "min": 0, "max": 40, "step": 2, "unit": "px", "label": "Grid Spacing (Mobile)", "default": 8 },
 
     { "type": "header", "content": "Heading Settings" },
     { "type": "text", "id": "section_title", "label": "Title Text", "default": "Tisso Vison in the wild" },
@@ -450,7 +459,8 @@
       ],
       "default": "portrait"
     },
-    { "type": "range", "id": "custom_height", "min": 200, "max": 600, "step": 10, "unit": "px", "label": "Custom Image Height", "default": 400 },
+    { "type": "range", "id": "custom_height", "min": 200, "max": 600, "step": 10, "unit": "px", "label": "Custom Image Height (Desktop)", "default": 400 },
+    { "type": "range", "id": "custom_height_m", "min": 100, "max": 600, "step": 10, "unit": "px", "label": "Custom Image Height (Mobile)", "default": 250 },
     {
       "type": "select", "id": "icon_pos", "label": "Plus Icon Position",
       "options": [
