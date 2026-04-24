@@ -57,7 +57,7 @@
         "ticker_bg": "#f5f5f0",
         "ticker_color": "#111111",
         "ticker_speed": 25,
-        "ticker_size_desk": 12,
+        "ticker_size_desk": 14,
         "ticker_size_mob": 10
       }
     },
