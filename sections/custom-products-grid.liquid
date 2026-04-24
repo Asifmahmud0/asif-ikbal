@@ -1,6 +1,7 @@
 {% comment %}
   ============================================================
-  Section: Product Grid + Pixel Perfect Popup
+  Section:Custom Product Grid 
+   Description:This custom Product Grid is built entirely from scratch using Vanilla JavaScript, without relying on any pre-built Dawn components. It features a fully responsive design with extensive Customizer controls for styling, spacing, and mobile adjustments. Clicking a product's plus icon opens a dynamic quick-view popup that fetches product JSON via AJAX to display the image, price, description, color swatches, and size dropdowns. The add-to-cart functionality works seamlessly without a page reload,
   ============================================================
 {% endcomment %}
 
@@ -408,7 +409,7 @@
 
 {% schema %}
 {
-  "name": "Product Grid",
+  "name": " Custom Product Grid",
   "settings": [
     { "type": "header", "content": "Section Layout (Desktop)" },
     { "type": "color", "id": "bg_color", "label": "Background Color", "default": "#ffffff" },
@@ -512,6 +513,6 @@
       ]
     }
   ],
-  "presets": [{ "name": "Product Grid" }]
+  "presets": [{ "name": "Custom Product Grid" }]
 }
 {% endschema %}
