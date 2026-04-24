@@ -98,61 +98,80 @@
     grid-template-columns: 140px 1fr; 
     gap: 16px; 
     margin-bottom: 24px; 
-    /* NEW: Controls vertical alignment of image vs text */
     align-items: {{ section.settings.pop_head_valign }};
   }
   
   .pg-popup__thumb { width: 100%; aspect-ratio: 1 / 1.1; object-fit: cover; display: block; }
   .pg-popup__meta { display: flex; flex-direction: column; justify-content: flex-start; padding-top: 4px; }
   
-  .pg-popup__name { font-size: 16px; color: #111; font-weight: 400; line-height: 1.2; margin-bottom: 12px; }
-  .pg-popup__price { font-size: 18px; color: #111; font-weight: 500; margin-bottom: 12px; }
-  .pg-popup__desc { font-size: 11px; color: #555; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+  .pg-popup__name { font-size: {{ section.settings.pop_title_size }}px; color: {{ section.settings.pop_title_color }}; font-weight: 400; line-height: 1.2; margin-bottom: 12px; }
+  .pg-popup__price { font-size: {{ section.settings.pop_price_size }}px; color: {{ section.settings.pop_price_color }}; font-weight: 500; margin-bottom: 12px; }
+  .pg-popup__desc { font-size: {{ section.settings.pop_desc_size }}px; color: {{ section.settings.pop_desc_color }}; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
   
   /* Section Labels */
   .pg-popup__label { font-size: 13px; font-weight: 400; color: #111; display: block; margin-bottom: 8px; }
   
   /* Colors Swatch (Pixel Perfect Match) */
-  .pg-popup__colors { display: flex; width: 100%; border: 1px solid #777; margin-bottom: 20px; }
+  .pg-popup__colors { display: flex; width: 100%; border: 1px solid {{ section.settings.swatch_border }}; margin-bottom: 20px; }
   
   .pg-color-btn { 
-    flex: 1; padding: 12px 14px; font-size: 14px; color: #111; border: none;
-    border-right: 1px solid #777; cursor: pointer; transition: 0.2s; text-align: left;
+    flex: 1; padding: {{ section.settings.swatch_pad_v }}px {{ section.settings.swatch_pad_h }}px; 
+    font-size: {{ section.settings.swatch_size }}px; color: #111; border: none;
+    border-right: 1px solid {{ section.settings.swatch_border }}; cursor: pointer; transition: 0.2s; text-align: left;
     border-left: 6px solid transparent; /* Dynamic Color Block */
-    background: {{ section.settings.swatch_bg | default: '#ffffff' }};
-    color: {{ section.settings.swatch_text | default: '#111111' }};
+    background: {{ section.settings.swatch_bg }};
+    color: {{ section.settings.swatch_text }};
   }
   .pg-color-btn:last-child { border-right: none; }
   
-  /* FIX: Added active state rendering properly */
   .pg-color-btn.is-active, .pg-color-btn:hover { 
-    background: {{ section.settings.swatch_bg_active | default: '#f0f0f0' }}; 
-    color: {{ section.settings.swatch_text_active | default: '#111111' }}; 
+    background: {{ section.settings.swatch_bg_active }}; 
+    color: {{ section.settings.swatch_text_active }}; 
   }
   
   /* Size Dropdown (Pixel Perfect Match) */
-  .pg-size-wrap { position: relative; width: 100%; border: 1px solid #777; margin-bottom: 24px; }
+  .pg-size-wrap { position: relative; width: 100%; border: 1px solid {{ section.settings.swatch_border }}; margin-bottom: 24px; }
   .pg-size-select { 
     width: 100%; border: none; padding: 12px 50px 12px 16px; font-size: 14px; 
     appearance: none; background: transparent; outline: none; cursor: pointer; color: #111;
   }
   .pg-size-arrow { 
-    position: absolute; right: 0; top: 0; bottom: 0; width: 48px; border-left: 1px solid #777; 
+    position: absolute; right: 0; top: 0; bottom: 0; width: 48px; border-left: 1px solid {{ section.settings.swatch_border }}; 
     display: flex; align-items: center; justify-content: center; pointer-events: none; color: #111;
   }
   .pg-size-arrow svg { width: 14px; height: 14px; stroke-width: 1.5; }
 
-  /* ATC Button (Pixel Perfect Match) */
+  /* ── ANIMATED ATC BUTTON (Matches Banner) ── */
   .pg-popup__atc {
-    width: 100%; background: #000; color: #fff; border: none; padding: 16px 24px;
-    display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s;
+    width: 100%; border: none; padding: {{ section.settings.atc_pad_v }}px {{ section.settings.atc_pad_h }}px;
+    display: flex; justify-content: space-between; align-items: center; cursor: pointer; 
+    position: relative; overflow: hidden;
+    background: {{ section.settings.atc_bg }}; 
+    color: {{ section.settings.atc_text }}; 
+    transition: color 0.35s ease;
   }
-  .pg-popup__atc:hover { background: #222; }
-  .pg-popup__atc span { font-size: 14px; letter-spacing: 0.05em; font-weight: 500; }
-  .pg-popup__atc svg { width: 32px; height: 16px; stroke: currentColor; stroke-width: 1.5; }
+  
+  /* Slide Fill Pseudo-element */
+  .pg-popup__atc::before {
+    content: ''; position: absolute; inset: 0; 
+    background: {{ section.settings.atc_bg_hover }};
+    transform: translateX(-101%); transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1); z-index: 0;
+  }
 
+  .pg-popup__atc span, .pg-popup__atc svg { position: relative; z-index: 1; }
+  
+  .pg-popup__atc span { font-size: {{ section.settings.atc_size }}px; letter-spacing: 0.05em; font-weight: 500; }
+  .pg-popup__atc svg { width: 32px; height: 16px; stroke: currentColor; stroke-width: 1.5; transition: transform 0.25s ease; }
+
+  /* Hover States */
+  .pg-popup__atc:hover::before { transform: translateX(0); }
+  .pg-popup__atc:hover { color: {{ section.settings.atc_text_hover }}; }
+  .pg-popup__atc:hover svg { transform: translateX(4px); }
+
+  /* Loading & Added States */
   .pg-popup__atc.is-loading { opacity: 0.7; pointer-events: none; }
-  .pg-popup__atc.is-added { background: #2a9d5c !important; justify-content: center; }
+  .pg-popup__atc.is-added { background: #2a9d5c !important; color: #fff !important; justify-content: center; }
+  .pg-popup__atc.is-added::before { display: none; }
   .pg-popup__atc.is-added svg { display: none; }
 
   .pg-error { color: #c0392b; font-size: 12px; margin-top: 10px; text-align: center; min-height: 14px; }
@@ -453,11 +472,32 @@
       "default": "start"
     },
 
+    { "type": "header", "content": "Popup Typography" },
+    { "type": "color", "id": "pop_title_color", "label": "Title Color", "default": "#111111" },
+    { "type": "range", "id": "pop_title_size", "min": 12, "max": 30, "step": 1, "unit": "px", "label": "Title Font Size", "default": 16 },
+    { "type": "color", "id": "pop_price_color", "label": "Price Color", "default": "#111111" },
+    { "type": "range", "id": "pop_price_size", "min": 12, "max": 30, "step": 1, "unit": "px", "label": "Price Font Size", "default": 18 },
+    { "type": "color", "id": "pop_desc_color", "label": "Description Color", "default": "#555555" },
+    { "type": "range", "id": "pop_desc_size", "min": 10, "max": 20, "step": 1, "unit": "px", "label": "Description Font Size", "default": 11 },
+
     { "type": "header", "content": "Popup Color Swatch Settings" },
     { "type": "color", "id": "swatch_bg", "label": "Background (Default)", "default": "#ffffff" },
     { "type": "color", "id": "swatch_text", "label": "Text Color (Default)", "default": "#111111" },
     { "type": "color", "id": "swatch_bg_active", "label": "Background (Active)", "default": "#f0f0f0" },
     { "type": "color", "id": "swatch_text_active", "label": "Text Color (Active)", "default": "#111111" },
+    { "type": "color", "id": "swatch_border", "label": "Border Line Color", "default": "#777777" },
+    { "type": "range", "id": "swatch_size", "min": 10, "max": 20, "step": 1, "unit": "px", "label": "Font Size", "default": 14 },
+    { "type": "range", "id": "swatch_pad_v", "min": 2, "max": 20, "step": 1, "unit": "px", "label": "Padding (Vertical)", "default": 12 },
+    { "type": "range", "id": "swatch_pad_h", "min": 5, "max": 30, "step": 1, "unit": "px", "label": "Padding (Horizontal)", "default": 14 },
+
+    { "type": "header", "content": "Popup 'Add To Cart' Button" },
+    { "type": "color", "id": "atc_bg", "label": "Base Background", "default": "#000000" },
+    { "type": "color", "id": "atc_text", "label": "Base Text Color", "default": "#ffffff" },
+    { "type": "color", "id": "atc_bg_hover", "label": "Hover Background", "default": "#f5e130" },
+    { "type": "color", "id": "atc_text_hover", "label": "Hover Text Color", "default": "#111111" },
+    { "type": "range", "id": "atc_size", "min": 10, "max": 24, "step": 1, "unit": "px", "label": "Font Size", "default": 14 },
+    { "type": "range", "id": "atc_pad_v", "min": 5, "max": 30, "step": 1, "unit": "px", "label": "Padding (Vertical)", "default": 16 },
+    { "type": "range", "id": "atc_pad_h", "min": 10, "max": 50, "step": 1, "unit": "px", "label": "Padding (Horizontal)", "default": 24 },
 
     { "type": "header", "content": "Special Cart Rule" },
     { "type": "product", "id": "auto_add_product", "label": "Free Product (Soft Winter Jacket)", "info": "This product automatically adds when user selects 'Black' and 'Medium'." }
