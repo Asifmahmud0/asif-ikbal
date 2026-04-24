@@ -34,7 +34,7 @@
         "height_desktop": 750,
         "height_mobile": 650,
         "align_desktop": "left",
-        "align_mobile": "left",
+        "align_mobile": "center",
         "heading": "The Gift Guide",
         "heading_color": "#000000",
         "heading_size_desk": 62,
