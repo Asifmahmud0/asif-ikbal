@@ -1,501 +1,303 @@
 {% comment %}
   ============================================================
-  Section: Custom Product Grid 
-  Description:This custom Banner section is built entirely from scratch to deliver a pixel-perfect match to the provided design. It features a fully responsive hero area with a top navigation bar, smooth slide-fill animations on the call-to-action buttons, and a pure CSS infinite-scrolling ticker at the bottom. The section is highly flexible, offering extensive Customizer controls so merchants can easily adjust separate desktop and mobile background images, text sizes, dynamic layout alignments, safely calculated overlay opacities, and full color schemes.
+  Section: Custom Banner Section
+  Description: 
+This custom Banner section is built entirely from scratch to deliver a pixel-perfect match to the provided design. It features a fully responsive hero area with a top navigation bar, smooth slide-fill animations on the call-to-action buttons, and a pure CSS infinite-scrolling ticker at the bottom. The section is highly flexible, offering extensive Customizer controls so merchants can easily adjust separate desktop and mobile background images, text sizes, dynamic layout alignments, safely calculated overlay opacities, and full color schemes.
   ============================================================
-{% endcomment %}
+      {% endcomment %}
 
 {%- style -%}
-  #pg-{{ section.id }} {
-    /* ── Desktop Section Layout ── */
-    padding-top: {{ section.settings.pad_t }}px;
-    padding-bottom: {{ section.settings.pad_b }}px;
-    padding-left: {{ section.settings.pad_l }}px;
-    padding-right: {{ section.settings.pad_r }}px;
-    background: {{ section.settings.bg_color }};
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  #bgg-{{ section.id }} {
+    /* ── Layout & Alignments ── */
+    --bgg-nav-height: {{ section.settings.nav_height }}px;
+    --bgg-height-desktop: {{ section.settings.height_desktop }}px;
+    --bgg-height-mobile: {{ section.settings.height_mobile }}px;
+    
+    --bgg-align-desktop: {{ section.settings.align_desktop }};
+    --bgg-flex-desktop: {% if section.settings.align_desktop == 'center' %}center{% elsif section.settings.align_desktop == 'right' %}flex-end{% else %}flex-start{% endif %};
+    
+    --bgg-align-mobile: {{ section.settings.align_mobile }};
+    --bgg-flex-mobile: {% if section.settings.align_mobile == 'center' %}center{% elsif section.settings.align_mobile == 'right' %}flex-end{% else %}flex-start{% endif %};
+
+    /* ── Text Sizes (Desktop) ── */
+    --bgg-logo-size: {{ section.settings.logo_size_desk }}px;
+    --bgg-tagline-size: {{ section.settings.tagline_size_desk }}px;
+    --bgg-heading-size: {{ section.settings.heading_size_desk }}px;
+    --bgg-desc-size: {{ section.settings.desc_size_desk }}px;
+    --bgg-btn-size: {{ section.settings.btn_size_desk }}px;
+    --bgg-ticker-size: {{ section.settings.ticker_size_desk }}px;
+
+    /* ── Button Sizing ── */
+    --bgg-btn-pad-v: {{ section.settings.btn_pad_v }}px;
+    --bgg-btn-pad-h: {{ section.settings.btn_pad_h }}px;
+
+    /* ── Colors ── */
+    --bgg-nav-bg: {{ section.settings.nav_bg_color }};
+    --bgg-nav-text: {{ section.settings.nav_text_color }};
+    --bgg-heading-color: {{ section.settings.heading_color }};
+    --bgg-text-color: {{ section.settings.text_color }};
+    
+    /* Primary Button (Hero) */
+    --bgg-btn-bg: {{ section.settings.btn_bg_color }};
+    --bgg-btn-text: {{ section.settings.btn_text_color }};
+    --bgg-btn-hover-bg: {{ section.settings.btn_hover_bg_color }};
+    --bgg-btn-hover-text: {{ section.settings.btn_hover_text_color }};
+
+    /* Secondary Button (Nav) */
+    --bgg-nav-btn-bg: {{ section.settings.nav_btn_bg_color }};
+    --bgg-nav-btn-text: {{ section.settings.nav_btn_text_color }};
+    --bgg-nav-btn-hover-bg: {{ section.settings.nav_btn_hover_bg_color }};
+    --bgg-nav-btn-hover-text: {{ section.settings.nav_btn_hover_text_color }};
+
+    /* Ticker */
+    --bgg-ticker-bg: {{ section.settings.ticker_bg }};
+    --bgg-ticker-text: {{ section.settings.ticker_color }};
+    --bgg-ticker-speed: {{ section.settings.ticker_speed }}s;
   }
 
-  /* ── Grid Settings (Desktop) ── */
-  #pg-grid-{{ section.id }} {
-    display: grid;
-    gap: {{ section.settings.grid_gap }}px;
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  #pg-grid-{{ section.id }} .pg-card {
-    {% if section.settings.image_ratio == 'portrait' %}
-      aspect-ratio: 3 / 4;
-    {% elsif section.settings.image_ratio == 'square' %}
-      aspect-ratio: 1 / 1;
-    {% elsif section.settings.image_ratio == 'landscape' %}
-      aspect-ratio: 4 / 3;
-    {% else %}
-      height: {{ section.settings.custom_height }}px;
-    {% endif %}
-  }
-
-  #pg-{{ section.id }} .pg-title {
-    color: {{ section.settings.head_color }};
-    font-size: {{ section.settings.head_size_d }}px;
-    text-align: {{ section.settings.head_align }};
-    margin-bottom: 24px; font-weight: 700; line-height: 1.2;
-  }
-
-  .pg-card { position: relative; overflow: hidden; cursor: pointer; background: #eee; }
-  .pg-card__img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; display: block; }
-  .pg-card:hover .pg-card__img { transform: scale(1.05); }
-  .pg-card::after { content:''; position:absolute; inset:0; background:rgba(0,0,0,0); transition:0.3s; pointer-events:none; }
-  .pg-card:hover::after { background:rgba(0,0,0,0.1); }
-
-  .pg-card__trigger {
-    position: absolute; width: 34px; height: 34px; border-radius: 50%; background: #fff; border: 1px solid #ddd;
-    display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2; transition: 0.2s;
-    font-size: 22px; color: #111; line-height: 1; font-weight: 300;
-  }
-  .pg-card__trigger:hover { background: #111; color: #fff; transform: scale(1.1); }
-
-  {% if section.settings.icon_pos == 'center' %}
-    .pg-card__trigger { top: 50%; left: 50%; transform: translate(-50%, -50%); }
-    .pg-card__trigger:hover { transform: translate(-50%, -50%) scale(1.1); }
-  {% elsif section.settings.icon_pos == 'top-left' %}
-    .pg-card__trigger { top: 12px; left: 12px; }
-  {% elsif section.settings.icon_pos == 'top-right' %}
-    .pg-card__trigger { top: 12px; right: 12px; }
-  {% elsif section.settings.icon_pos == 'bottom-left' %}
-    .pg-card__trigger { bottom: 12px; left: 12px; }
-  {% elsif section.settings.icon_pos == 'bottom-right' %}
-    .pg-card__trigger { bottom: 12px; right: 12px; }
-  {% endif %}
-
-  /* ── MODAL OVERLAY ── */
-  .pg-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000;
-    display: flex; align-items: center; justify-content: center;
-    opacity: 0; visibility: hidden; transition: 0.3s ease; padding: 16px;
-  }
-  .pg-overlay.is-open { opacity: 1; visibility: visible; }
-  
-  /* ── PIXEL PERFECT POPUP CARD ── */
-  .pg-popup { 
-    background: #fff; width: 100%; max-width: 400px; padding: 28px 24px 24px;
-    position: relative; transform: translateY(20px); transition: 0.4s ease; opacity: 0; 
-    box-shadow: 0 10px 40px rgba(0,0,0,0.15); border: 1px solid #eaeaea;
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  }
-  .pg-overlay.is-open .pg-popup { transform: translateY(0); opacity: 1; }
-  
-  /* Close Icon */
-  .pg-popup__close { 
-    position: absolute; top: 16px; right: 16px; background: none; border: none; cursor: pointer; color: #111;
-    display: flex; align-items: center; justify-content: center; transition: opacity 0.2s; opacity: 0.6;
-  }
-  .pg-popup__close:hover { opacity: 1; }
-  .pg-popup__close svg { width: 16px; height: 16px; stroke-width: 1.5; }
-
-  /* Head: Image + Text */
-  .pg-popup__head { 
-    display: grid; 
-    grid-template-columns: 140px 1fr; 
-    gap: 16px; 
-    margin-bottom: 24px; 
-    align-items: {{ section.settings.pop_head_valign }};
-  }
-  
-  .pg-popup__thumb { width: 100%; aspect-ratio: 1 / 1.1; object-fit: cover; display: block; }
-  .pg-popup__meta { display: flex; flex-direction: column; justify-content: flex-start; padding-top: 4px; }
-  
-  .pg-popup__name { font-size: 16px; color: #111; font-weight: 400; line-height: 1.2; margin-bottom: 12px; }
-  .pg-popup__price { font-size: 18px; color: #111; font-weight: 500; margin-bottom: 12px; }
-  .pg-popup__desc { font-size: 11px; color: #555; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
-  
-  /* Section Labels */
-  .pg-popup__label { font-size: 13px; font-weight: 400; color: #111; display: block; margin-bottom: 8px; }
-  
-  /* Colors Swatch */
-  .pg-popup__colors { display: flex; width: 100%; border: 1px solid #777; margin-bottom: 20px; }
-  .pg-color-btn { 
-    flex: 1; padding: 12px 14px; font-size: 14px; border: none;
-    border-right: 1px solid #777; cursor: pointer; transition: 0.2s; text-align: left;
-    border-left: 6px solid transparent; /* Dynamic Color Block */
-    background: {{ section.settings.swatch_bg | default: '#ffffff' }};
-    color: {{ section.settings.swatch_text | default: '#111111' }};
-  }
-  .pg-color-btn:last-child { border-right: none; }
-  
-  .pg-color-btn.is-active, .pg-color-btn:hover { 
-    background: {{ section.settings.swatch_bg_active | default: '#f0f0f0' }}; 
-    color: {{ section.settings.swatch_text_active | default: '#111111' }}; 
-  }
-  
-  /* Size Dropdown */
-  .pg-size-wrap { position: relative; width: 100%; border: 1px solid #777; margin-bottom: 24px; }
-  .pg-size-select { 
-    width: 100%; border: none; padding: 12px 50px 12px 16px; font-size: 14px; 
-    appearance: none; background: transparent; outline: none; cursor: pointer; color: #111;
-  }
-  .pg-size-arrow { 
-    position: absolute; right: 0; top: 0; bottom: 0; width: 48px; border-left: 1px solid #777; 
-    display: flex; align-items: center; justify-content: center; pointer-events: none; color: #111;
-  }
-  .pg-size-arrow svg { width: 14px; height: 14px; stroke-width: 1.5; }
-
-  /* ── ANIMATED ATC BUTTON (Matches Banner) ── */
-  .pg-popup__atc {
-    width: 100%; border: none; padding: 16px 24px;
-    display: flex; justify-content: space-between; align-items: center; cursor: pointer; 
-    position: relative; overflow: hidden;
-    background: {{ section.settings.atc_bg }}; 
-    color: {{ section.settings.atc_text }}; 
-    transition: color 0.35s ease;
-  }
-  
-  /* Slide Fill Pseudo-element */
-  .pg-popup__atc::before {
-    content: ''; position: absolute; inset: 0; 
-    background: {{ section.settings.atc_bg_hover }};
-    transform: translateX(-101%); transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1); z-index: 0;
-  }
-
-  .pg-popup__atc span, .pg-popup__atc svg { position: relative; z-index: 1; }
-  
-  .pg-popup__atc span { font-size: 14px; letter-spacing: 0.05em; font-weight: 500; }
-  .pg-popup__atc svg { width: 32px; height: 16px; stroke: currentColor; stroke-width: 1.5; transition: transform 0.25s ease; }
-
-  /* Hover States */
-  .pg-popup__atc:hover::before { transform: translateX(0); }
-  .pg-popup__atc:hover { color: {{ section.settings.atc_text_hover }}; }
-  .pg-popup__atc:hover svg { transform: translateX(4px); }
-
-  /* Loading & Added States */
-  .pg-popup__atc.is-loading { opacity: 0.7; pointer-events: none; }
-  .pg-popup__atc.is-added { background: #2a9d5c !important; color: #fff !important; justify-content: center; }
-  .pg-popup__atc.is-added::before { display: none; }
-  .pg-popup__atc.is-added svg { display: none; }
-
-  .pg-error { color: #c0392b; font-size: 12px; margin-top: 10px; text-align: center; min-height: 14px; }
-
-  /* ── Mobile Overrides ── */
+               /* ── Mobile Overrides ── */
   @media (max-width: 768px) {
-    #pg-{{ section.id }} {
-      padding-top: {{ section.settings.pad_t_m }}px;
-      padding-bottom: {{ section.settings.pad_b_m }}px;
-      padding-left: {{ section.settings.pad_l_m }}px;
-      padding-right: {{ section.settings.pad_r_m }}px;
+    #bgg-{{ section.id }} {
+      --bgg-logo-size: {{ section.settings.logo_size_mob }}px;
+      --bgg-tagline-size: {{ section.settings.tagline_size_mob }}px;
+      --bgg-heading-size: {{ section.settings.heading_size_mob }}px;
+      --bgg-desc-size: {{ section.settings.desc_size_mob }}px;
+      --bgg-btn-size: {{ section.settings.btn_size_mob }}px;
+      --bgg-ticker-size: {{ section.settings.ticker_size_mob }}px;
     }
-    #pg-grid-{{ section.id }} { grid-template-columns: repeat(2, 1fr); gap: {{ section.settings.grid_gap_m }}px; }
-    {% if section.settings.image_ratio == 'custom' %}
-      #pg-grid-{{ section.id }} .pg-card { height: {{ section.settings.custom_height_m }}px; }
-    {% endif %}
-    #pg-{{ section.id }} .pg-title { font-size: {{ section.settings.head_size_m }}px; }
+  }
+
+              /* ── Reset & Structure ── */
+  .bgg-section *, .bgg-section *::before, .bgg-section *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  .bgg-section {
+    position: relative; width: 100%; background-color: var(--bgg-nav-bg);
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; overflow: hidden;
+  }
+
+              /* ── Nav Bar ── */
+  .bgg-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px; height: var(--bgg-nav-height); background: var(--bgg-nav-bg);
+    border-bottom: 1px solid rgba(0,0,0,0.08); position: relative; z-index: 10;
+  }
+  .bgg-nav__logo-link { display: flex; align-items: center; text-decoration: none; }
+  .bgg-nav__logo-img { max-height: calc(var(--bgg-nav-height) - 16px); width: auto; object-fit: contain; }
+  .bgg-nav__logo-text { font-family: 'Georgia', serif; font-size: var(--bgg-logo-size); font-weight: 700; color: var(--bgg-nav-text); text-transform: uppercase; }
+  .bgg-nav__tagline { font-size: var(--bgg-tagline-size); color: var(--bgg-nav-text); position: absolute; left: 50%; transform: translateX(-50%); }
+
+            /* ── Buttons ── */
+  .bgg-btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-size: var(--bgg-btn-size); font-weight: 600; letter-spacing: 0.08em; 
+    text-transform: uppercase; text-decoration: none;
+    padding: var(--bgg-btn-pad-v) var(--bgg-btn-pad-h); 
+    position: relative; overflow: hidden; transition: color 0.35s ease;
+    border: none; cursor: pointer;
+  }
+  .bgg-btn::before {
+    content: ''; position: absolute; inset: 0; transform: translateX(-101%);
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1); z-index: 0;
+  }
+  .bgg-btn span, .bgg-btn svg { position: relative; z-index: 1; }
+  .bgg-btn:hover::before { transform: translateX(0); }
+  .bgg-btn__arrow { width: 1.4em; height: 0.9em; stroke: currentColor; fill: none; stroke-width: 2; transition: transform 0.25s ease; }
+  .bgg-btn:hover .bgg-btn__arrow { transform: translateX(4px); }
+
+  /* Nav Button */
+  .bgg-btn--nav { background: var(--bgg-nav-btn-bg); color: var(--bgg-nav-btn-text); }
+  .bgg-btn--nav::before { background: var(--bgg-nav-btn-hover-bg); }
+  .bgg-btn--nav:hover { color: var(--bgg-nav-btn-hover-text); }
+
+  /* Hero Button */
+  .bgg-btn--hero { background: var(--bgg-btn-bg); color: var(--bgg-btn-text); }
+  .bgg-btn--hero::before { background: var(--bgg-btn-hover-bg); }
+  .bgg-btn--hero:hover { color: var(--bgg-btn-hover-text); }
+
+                  /* ── Hero Area ── */
+  .bgg-hero {
+    position: relative;
+    height: var(--bgg-height-desktop);
+    display: flex; align-items: flex-end; justify-content: var(--bgg-flex-desktop);
+    padding: 40px 32px calc(60px + 40px); /* Extra padding to avoid overlap with ticker */
+  }
+  .bgg-hero__bg-wrap { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+  .bgg-hero__bg-wrap picture { display: block; width: 100%; height: 100%; }
+  .bgg-hero__bg-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  /* Content */
+  .bgg-hero__content { 
+    position: relative; z-index: 2; max-width: 600px; 
+    text-align: var(--bgg-align-desktop);
+  }
+  .bgg-hero__heading { font-family: 'Georgia', serif; font-size: var(--bgg-heading-size); color: var(--bgg-heading-color); margin-bottom: 18px; line-height: 1.05; }
+  .bgg-hero__description { font-size: var(--bgg-desc-size); line-height: 1.6; color: var(--bgg-text-color); margin-bottom: 28px; }
+
+  /* ── Infinite Ticker / Marquee ── */
+  .bgg-ticker {
+    position: absolute; bottom: 0; left: 0; width: 100%;
+    background: var(--bgg-ticker-bg); border-top: 1px solid rgba(0,0,0,0.08);
+    overflow: hidden; z-index: 5; display: flex; align-items: center;
+    padding: 12px 0;
+  }
+  .bgg-ticker__track {
+    display: flex; white-space: nowrap;
+    animation: bgg-marquee var(--bgg-ticker-speed) linear infinite;
+  }
+  .bgg-ticker__track:hover { animation-play-state: paused; }
+  .bgg-ticker__item {
+    font-size: var(--bgg-ticker-size); font-weight: 600; letter-spacing: 0.1em;
+    color: var(--bgg-ticker-text); padding: 0 20px;
+  }
+  
+  @keyframes bgg-marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* ── Responsive Mobile overrides ── */
+  @media (max-width: 768px) {
+    .bgg-hero { 
+      height: var(--bgg-height-mobile); 
+      padding: 30px 20px calc(50px + 30px); 
+      justify-content: var(--bgg-flex-mobile);
+    }
+    .bgg-hero__content { text-align: var(--bgg-align-mobile); }
+    .bgg-nav__tagline { display: none; }
+    .bgg-nav { padding: 0 16px; }
+    .bgg-ticker { padding: 10px 0; }
   }
 {%- endstyle -%}
 
-<section class="pg-section" id="pg-{{ section.id }}">
-  <h2 class="pg-title">{{ section.settings.section_title }}</h2>
+<section class="bgg-section" id="bgg-{{ section.id }}">
   
-  <div class="pg-grid" id="pg-grid-{{ section.id }}">
-    {%- for block in section.blocks -%}
-      {%- assign pg_product = block.settings.product -%}
-      {%- if pg_product != blank -%}
-        <div class="pg-card">
-          <img class="pg-card__img" src="{{ pg_product.featured_image | img_url: '600x' }}" alt="{{ pg_product.title | escape }}" loading="lazy">
-          <button class="pg-card__trigger" aria-label="Quick View" data-handle="{{ pg_product.handle }}">+</button>
-        </div>
-      {%- endif -%}
-    {%- endfor -%}
+  <!-- Nav Bar -->
+  <nav class="bgg-nav">
+    <a class="bgg-nav__logo-link" href="{{ routes.root_url }}">
+      {% if section.settings.logo_image != blank %}
+        <img class="bgg-nav__logo-img" src="{{ section.settings.logo_image | img_url: 'master' }}" alt="{{ section.settings.logo_image.alt | default: shop.name }}" style="width: {{ section.settings.logo_width }}px;">
+      {% else %}
+        <span class="bgg-nav__logo-text">{{ section.settings.logo_text }}</span>
+      {% endif %}
+    </a>
+    <p class="bgg-nav__tagline">{{ section.settings.nav_tagline }}</p>
+    <a class="bgg-btn bgg-btn--nav" href="{{ section.settings.cta_choose_url }}">
+      <span>{{ section.settings.cta_choose_label }}</span>
+      <svg class="bgg-btn__arrow" viewBox="0 0 18 12"><path d="M0 6h16M11 1l5 5-5 5"/></svg>
+    </a>
+  </nav>
+
+              <!-- Hero Section -->
+      <div class="bgg-hero">
+        <div class="bgg-hero__bg-wrap">
+      {% if section.settings.bg_image_desktop != blank %}
+        <picture>
+          {% if section.settings.bg_image_mobile != blank %}
+            <source media="(max-width: 768px)" srcset="{{ section.settings.bg_image_mobile | img_url: '800x' }}">
+          {% endif %}
+          <img class="bgg-hero__bg-img" src="{{ section.settings.bg_image_desktop | img_url: '1600x' }}" alt="Banner background">
+        </picture>
+      {% else %}
+        <div style="width:100%; height:100%; background:#ddd;"></div>
+      {% endif %}
+    </div>
+
+    <!-- Hero Content -->
+    <div class="bgg-hero__content">
+      <h1 class="bgg-hero__heading">{{ section.settings.heading }}</h1>
+      <p class="bgg-hero__description">{{ section.settings.description }}</p>
+      <a class="bgg-btn bgg-btn--hero" href="{{ section.settings.cta_shop_url }}">
+        <span>{{ section.settings.cta_shop_label }}</span>
+        <svg class="bgg-btn__arrow" viewBox="0 0 18 12"><path d="M0 6h16M11 1l5 5-5 5"/></svg>
+      </a>
+    </div>
+
+    <!-- Infinite Scroll Ticker -->
+    <div class="bgg-ticker" aria-hidden="true">
+      <div class="bgg-ticker__track">
+        {% assign ticker_text = section.settings.ticker_text %}
+        {% comment %} Repeat enough times to fill wide screens seamlessly {% endcomment %}
+        {% for i in (1..8) %}
+          <span class="bgg-ticker__item">{{ ticker_text }}</span>
+          <span class="bgg-ticker__item" style="padding:0;">·</span>
+        {% endfor %}
+      </div>
+    </div>
+
   </div>
 </section>
 
-<!-- ── Pixel Perfect Modal ── -->
-<div class="pg-overlay" id="pg-overlay">
-  <div class="pg-popup">
-    
-    <button class="pg-popup__close" id="pg-close">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 6L6 18M6 6l12 12"/></svg>
-    </button>
-    
-    <div class="pg-popup__head">
-      <img class="pg-popup__thumb" id="pg-thumb" src="" alt="">
-      <div class="pg-popup__meta">
-        <h3 class="pg-popup__name" id="pg-name"></h3>
-        <div class="pg-popup__price" id="pg-price"></div>
-        <div class="pg-popup__desc" id="pg-desc"></div>
-      </div>
-    </div>
-
-    <div id="pg-color-section" style="display:none; margin-bottom: 20px;">
-      <span class="pg-popup__label" id="pg-color-label">Color</span>
-      <div class="pg-popup__colors" id="pg-color-buttons"></div>
-    </div>
-
-    <div id="pg-size-section" style="display:none; margin-bottom: 24px;">
-      <span class="pg-popup__label" id="pg-size-label">Size</span>
-      <div class="pg-size-wrap">
-        <select class="pg-size-select" id="pg-size-select"></select>
-        <div class="pg-size-arrow">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 9l6 6 6-6"/></svg>
-        </div>
-      </div>
-    </div>
-
-    <button class="pg-popup__atc" id="pg-atc">
-      <span id="pg-atc-text">ADD TO CART</span>
-      <svg id="pg-atc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
-    </button>
-    <div class="pg-error" id="pg-error"></div>
-
-  </div>
-</div>
-
-<script>
-(function() {
-  var BONUS_PRODUCT_ID = {{ section.settings.auto_add_product.selected_or_first_available_variant.id | default: 'null' }};
-  var activeProduct = null;
-  var selectedOptions = {};
-
-  var overlay = document.getElementById('pg-overlay');
-  var closeBtn = document.getElementById('pg-close');
-  var atcBtn = document.getElementById('pg-atc');
-  var atcText = document.getElementById('pg-atc-text');
-  var atcArrow = document.getElementById('pg-atc-arrow');
-  var errorEl = document.getElementById('pg-error');
-  var sizeSel = document.getElementById('pg-size-select');
-
-  function formatMoney(cents) { return (cents / 100).toFixed(2) + '€'; }
-
-  function getJacketVariantId() {
-    if (BONUS_PRODUCT_ID) return Promise.resolve(BONUS_PRODUCT_ID);
-    return fetch('/products/soft-winter-jacket.js').then(r => r.ok ? r.json() : null).then(d => d && d.variants ? d.variants[0].id : null).catch(() => null);
-  }
-
-  function openPopup(product) {
-    activeProduct = product;
-    selectedOptions = {};
-    errorEl.textContent = '';
-    atcBtn.classList.remove('is-added');
-    atcText.textContent = "ADD TO CART";
-    atcArrow.style.display = 'block';
-    
-    document.getElementById('pg-thumb').src = product.images[0] || '';
-    
-    // Inject a break tag to mimic the stacked title in the design
-    var titleWords = product.title.split(' ');
-    if(titleWords.length > 2) {
-      titleWords.splice(2, 0, '<br>');
-      document.getElementById('pg-name').innerHTML = titleWords.join(' ');
-    } else {
-      document.getElementById('pg-name').textContent = product.title;
-    }
-    
-    document.getElementById('pg-price').textContent = formatMoney(product.variants[0].price);
-    
-    var tempDiv = document.createElement('div'); tempDiv.innerHTML = product.description;
-    var plainText = tempDiv.textContent || tempDiv.innerText || "";
-    document.getElementById('pg-desc').textContent = plainText.slice(0, 120) + (plainText.length > 120 ? '...' : '');
-
-    var colorSec = document.getElementById('pg-color-section');
-    var colorBtns = document.getElementById('pg-color-buttons');
-    var sizeSec = document.getElementById('pg-size-section');
-    
-    colorSec.style.display = 'none'; sizeSec.style.display = 'none';
-    colorBtns.innerHTML = ''; sizeSel.innerHTML = '<option value="">Choose your size</option>';
-
-    product.options.forEach(function(opt) {
-      var name = opt.name.toLowerCase();
-      if(name.includes('color') || name.includes('colour')) {
-        document.getElementById('pg-color-label').textContent = opt.name;
-        opt.values.forEach(function(val, idx) {
-          var btn = document.createElement('button');
-          btn.className = 'pg-color-btn' + (idx===0 ? ' is-active':'');
-          // Creates the pixel perfect colored side-border matching the design
-          btn.style.borderLeftColor = val.toLowerCase().replace(/ /g, '');
-          btn.textContent = val;
-          if(idx===0) selectedOptions[name] = val;
-          
-          btn.onclick = function() {
-            colorBtns.querySelectorAll('.pg-color-btn').forEach(b => b.classList.remove('is-active'));
-            btn.classList.add('is-active');
-            selectedOptions[name] = val;
-            updateVariantPrice();
-          };
-          colorBtns.appendChild(btn);
-        });
-        colorSec.style.display = 'block';
-      }
-      else if(name.includes('size')) {
-        document.getElementById('pg-size-label').textContent = opt.name;
-        opt.values.forEach(function(val) {
-          var option = document.createElement('option'); option.value = val; option.textContent = val;
-          sizeSel.appendChild(option);
-        });
-        sizeSec.style.display = 'block';
-      }
-    });
-
-    overlay.classList.add('is-open');
-    document.body.style.overflow = 'hidden';
-  }
-
-  function updateVariantPrice() {
-    var v = getSelectedVariant();
-    if (v) document.getElementById('pg-price').textContent = formatMoney(v.price);
-  }
-
-  function getSelectedVariant() {
-    return activeProduct.variants.find(function(v) {
-      return activeProduct.options.every(function(opt, i) {
-        var optName = opt.name.toLowerCase();
-        var selectedVal = selectedOptions[optName];
-        if(!selectedVal && optName.includes('size')) selectedVal = sizeSel.value;
-        return !selectedVal || v['option' + (i+1)] === selectedVal;
-      });
-    });
-  }
-
-  atcBtn.addEventListener('click', function() {
-    var sizeSecVisible = document.getElementById('pg-size-section').style.display === 'block';
-    if(sizeSecVisible && !sizeSel.value) {
-      errorEl.textContent = "Please select a size."; sizeSel.focus(); return;
-    }
-    
-    var variant = getSelectedVariant();
-    if(!variant) return errorEl.textContent = "This combination is unavailable.";
-
-    errorEl.textContent = "";
-    atcBtn.classList.add('is-loading'); atcText.textContent = "ADDING...";
-
-    var vOpts = [variant.option1, variant.option2, variant.option3].filter(Boolean).map(o => o.toLowerCase().trim());
-    var isBlackAndMedium = vOpts.includes('black') && vOpts.includes('medium');
-
-    var cartItems = [{ id: variant.id, quantity: 1 }];
-    var jacketPromise = isBlackAndMedium ? getJacketVariantId() : Promise.resolve(null);
-
-    jacketPromise.then(function(bonusId) {
-      if(bonusId) cartItems.push({ id: bonusId, quantity: 1 });
-      return fetch(window.Shopify.routes.root + 'cart/add.js', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ items: cartItems }) });
-    })
-    .then(r => r.json())
-    .then(function() {
-      atcBtn.classList.remove('is-loading'); atcBtn.classList.add('is-added');
-      atcText.textContent = "ADDED TO CART"; atcArrow.style.display = 'none';
-      
-      window.dispatchEvent(new Event('cart:updated'));
-      document.documentElement.dispatchEvent(new CustomEvent('cart:change', {bubbles: true}));
-
-      setTimeout(closePopup, 1200);
-    }).catch(function() {
-      atcBtn.classList.remove('is-loading'); atcText.textContent = "ADD TO CART";
-      errorEl.textContent = "Failed to add. Please try again.";
-    });
-  });
-
-  document.addEventListener('click', function(e) {
-    if(e.target.closest('.pg-card__trigger')) {
-      var handle = e.target.closest('.pg-card__trigger').dataset.handle;
-      fetch('/products/' + handle + '.js').then(r => r.json()).then(openPopup);
-    }
-  });
-
-  function closePopup() { overlay.classList.remove('is-open'); document.body.style.overflow = ''; }
-  closeBtn.addEventListener('click', closePopup);
-  overlay.addEventListener('click', (e) => { if(e.target === overlay) closePopup(); });
-  sizeSel.addEventListener('change', updateVariantPrice);
-
-})();
-</script>
-
 {% schema %}
 {
-  "name": " Custom Product Grid",
+  "name": "Custom – Banner Section",
   "settings": [
-    { "type": "header", "content": "Section Layout (Desktop)" },
-    { "type": "color", "id": "bg_color", "label": "Background Color", "default": "#ffffff" },
-    { "type": "range", "id": "pad_t", "min": 0, "max": 100, "step": 5, "unit": "px", "label": "Padding Top", "default": 40 },
-    { "type": "range", "id": "pad_b", "min": 0, "max": 100, "step": 5, "unit": "px", "label": "Padding Bottom", "default": 40 },
-    { "type": "range", "id": "pad_l", "min": 0, "max": 100, "step": 5, "unit": "px", "label": "Padding Left", "default": 25 },
-    { "type": "range", "id": "pad_r", "min": 0, "max": 100, "step": 5, "unit": "px", "label": "Padding Right", "default": 25 },
-    { "type": "range", "id": "grid_gap", "min": 0, "max": 40, "step": 2, "unit": "px", "label": "Grid Spacing (Desktop)", "default": 8 },
+    { "type": "header", "content": "Navigation Settings" },
+    { "type": "range", "id": "nav_height", "min": 40, "max": 100, "step": 2, "unit": "px", "label": "Nav Bar Height", "default": 60 },
+    { "type": "color", "id": "nav_bg_color", "label": "Nav Background", "default": "#f5f5f0" },
+    { "type": "color", "id": "nav_text_color", "label": "Nav Text Color", "default": "#111111" },
+    { "type": "text", "id": "logo_text", "label": "Logo Text", "default": "TISSO VISON" },
+    { "type": "image_picker", "id": "logo_image", "label": "Logo Image (Overrides text)" },
+    { "type": "range", "id": "logo_width", "min": 50, "max": 250, "step": 5, "unit": "px", "label": "Logo Image Width", "default": 120 },
+    { "type": "range", "id": "logo_size_desk", "min": 12, "max": 40, "step": 1, "unit": "px", "label": "Logo Text Size (Desktop)", "default": 18 },
+    { "type": "range", "id": "logo_size_mob", "min": 10, "max": 30, "step": 1, "unit": "px", "label": "Logo Text Size (Mobile)", "default": 15 },
+    { "type": "text", "id": "nav_tagline", "label": "Tagline", "default": "Find the ideal gift for your loved ones." },
+    { "type": "range", "id": "tagline_size_desk", "min": 10, "max": 24, "step": 1, "unit": "px", "label": "Tagline Size (Desktop)", "default": 13 },
+    { "type": "range", "id": "tagline_size_mob", "min": 10, "max": 20, "step": 1, "unit": "px", "label": "Tagline Size (Mobile)", "default": 12 },
 
-    { "type": "header", "content": "Section Layout (Mobile)" },
-    { "type": "range", "id": "pad_t_m", "min": 0, "max": 100, "step": 5, "unit": "px", "label": "Padding Top (Mobile)", "default": 20 },
-    { "type": "range", "id": "pad_b_m", "min": 0, "max": 100, "step": 5, "unit": "px", "label": "Padding Bottom (Mobile)", "default": 20 },
-    { "type": "range", "id": "pad_l_m", "min": 0, "max": 100, "step": 5, "unit": "px", "label": "Padding Left (Mobile)", "default": 10 },
-    { "type": "range", "id": "pad_r_m", "min": 0, "max": 100, "step": 5, "unit": "px", "label": "Padding Right (Mobile)", "default": 10 },
-    { "type": "range", "id": "grid_gap_m", "min": 0, "max": 40, "step": 2, "unit": "px", "label": "Grid Spacing (Mobile)", "default": 8 },
+    { "type": "header", "content": "Nav Button Settings" },
+    { "type": "text", "id": "cta_choose_label", "label": "Button Text", "default": "CHOOSE GIFT" },
+    { "type": "url", "id": "cta_choose_url", "label": "Button Link" },
+    { "type": "color", "id": "nav_btn_bg_color", "label": "Button Background", "default": "#f5e130" },
+    { "type": "color", "id": "nav_btn_text_color", "label": "Button Text Color", "default": "#111111" },
+    { "type": "color", "id": "nav_btn_hover_bg_color", "label": "Hover Background", "default": "#111111" },
+    { "type": "color", "id": "nav_btn_hover_text_color", "label": "Hover Text Color", "default": "#ffffff" },
 
-    { "type": "header", "content": "Heading Settings" },
-    { "type": "text", "id": "section_title", "label": "Title Text", "default": "Tisso Vison in the wild" },
-    { "type": "color", "id": "head_color", "label": "Title Color", "default": "#111111" },
-    { "type": "range", "id": "head_size_d", "min": 14, "max": 40, "step": 1, "unit": "px", "label": "Font Size (Desktop)", "default": 18 },
-    { "type": "range", "id": "head_size_m", "min": 12, "max": 30, "step": 1, "unit": "px", "label": "Font Size (Mobile)", "default": 16 },
+    { "type": "header", "content": "Hero Layout & Background" },
+    { "type": "image_picker", "id": "bg_image_desktop", "label": "Desktop Background" },
+    { "type": "image_picker", "id": "bg_image_mobile", "label": "Mobile Background (Optional)" },
+    { "type": "range", "id": "height_desktop", "min": 400, "max": 1000, "step": 10, "unit": "px", "label": "Desktop Height", "default": 650 },
+    { "type": "range", "id": "height_mobile", "min": 300, "max": 800, "step": 10, "unit": "px", "label": "Mobile Height", "default": 550 },
     {
-      "type": "select", "id": "head_align", "label": "Title Alignment",
+      "type": "select", "id": "align_desktop", "label": "Text Alignment (Desktop)",
+      "options": [ { "value": "left", "label": "Left" }, { "value": "center", "label": "Center" }, { "value": "right", "label": "Right" } ],
+      "default": "left"
+    },
+    {
+      "type": "select", "id": "align_mobile", "label": "Text Alignment (Mobile)",
       "options": [ { "value": "left", "label": "Left" }, { "value": "center", "label": "Center" }, { "value": "right", "label": "Right" } ],
       "default": "left"
     },
 
-    { "type": "header", "content": "Card Settings" },
-    {
-      "type": "select", "id": "image_ratio", "label": "Image Aspect Ratio",
-      "options": [
-        { "value": "portrait", "label": "Portrait (3:4)" },
-        { "value": "square", "label": "Square (1:1)" },
-        { "value": "landscape", "label": "Landscape (4:3)" },
-        { "value": "custom", "label": "Custom Height" }
-      ],
-      "default": "square"
-    },
-    { "type": "range", "id": "custom_height", "min": 200, "max": 600, "step": 10, "unit": "px", "label": "Custom Image Height (Desktop)", "default": 400 },
-    { "type": "range", "id": "custom_height_m", "min": 100, "max": 600, "step": 10, "unit": "px", "label": "Custom Image Height (Mobile)", "default": 250 },
-    {
-      "type": "select", "id": "icon_pos", "label": "Plus Icon Position",
-      "options": [
-        { "value": "top-left", "label": "Top Left" },
-        { "value": "top-right", "label": "Top Right" },
-        { "value": "center", "label": "Center" },
-        { "value": "bottom-left", "label": "Bottom Left" },
-        { "value": "bottom-right", "label": "Bottom Right" }
-      ],
-      "default": "top-right"
-    },
+    { "type": "header", "content": "Hero Text & Sizes" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "The Gift Guide" },
+    { "type": "color", "id": "heading_color", "label": "Heading Color", "default": "#ffffff" },
+    { "type": "range", "id": "heading_size_desk", "min": 24, "max": 80, "step": 1, "unit": "px", "label": "Heading Size (Desktop)", "default": 62 },
+    { "type": "range", "id": "heading_size_mob", "min": 20, "max": 60, "step": 1, "unit": "px", "label": "Heading Size (Mobile)", "default": 42 },
+    
+    { "type": "textarea", "id": "description", "label": "Description", "default": "Discover Joy: Your Ultimate Holiday Gift Destination." },
+    { "type": "color", "id": "text_color", "label": "Description Color", "default": "#ffffff" },
+    { "type": "range", "id": "desc_size_desk", "min": 12, "max": 30, "step": 1, "unit": "px", "label": "Description Size (Desktop)", "default": 15 },
+    { "type": "range", "id": "desc_size_mob", "min": 10, "max": 24, "step": 1, "unit": "px", "label": "Description Size (Mobile)", "default": 14 },
 
-    { "type": "header", "content": "Popup Global Layout" },
-    {
-      "type": "select", "id": "pop_head_valign", "label": "Image & Text Vertical Alignment",
-      "options": [
-        { "value": "flex-start", "label": "Top" },
-        { "value": "center", "label": "Center" },
-        { "value": "flex-end", "label": "Bottom" }
-      ],
-      "default": "flex-start"
-    },
+    { "type": "header", "content": "Global Button Sizing & Hero Button Colors" },
+    { "type": "range", "id": "btn_pad_v", "min": 5, "max": 30, "step": 1, "unit": "px", "label": "Button Padding (Top/Bottom)", "default": 14 },
+    { "type": "range", "id": "btn_pad_h", "min": 10, "max": 50, "step": 1, "unit": "px", "label": "Button Padding (Left/Right)", "default": 28 },
+    { "type": "range", "id": "btn_size_desk", "min": 10, "max": 24, "step": 1, "unit": "px", "label": "Button Text Size (Desktop)", "default": 13 },
+    { "type": "range", "id": "btn_size_mob", "min": 9, "max": 20, "step": 1, "unit": "px", "label": "Button Text Size (Mobile)", "default": 11 },
+    { "type": "text", "id": "cta_shop_label", "label": "Hero Button Text", "default": "SHOP NOW" },
+    { "type": "url", "id": "cta_shop_url", "label": "Hero Button Link" },
+    { "type": "color", "id": "btn_bg_color", "label": "Hero Button Background", "default": "#111111" },
+    { "type": "color", "id": "btn_text_color", "label": "Hero Button Text Color", "default": "#ffffff" },
+    { "type": "color", "id": "btn_hover_bg_color", "label": "Hero Hover Background", "default": "#f5e130" },
+    { "type": "color", "id": "btn_hover_text_color", "label": "Hero Hover Text Color", "default": "#111111" },
 
-    { "type": "header", "content": "Popup Color Swatch Settings" },
-    { "type": "color", "id": "swatch_bg", "label": "Background (Default)", "default": "#ffffff" },
-    { "type": "color", "id": "swatch_text", "label": "Text Color (Default)", "default": "#111111" },
-    { "type": "color", "id": "swatch_bg_active", "label": "Background (Active)", "default": "#f0f0f0" },
-    { "type": "color", "id": "swatch_text_active", "label": "Text Color (Active)", "default": "#111111" },
-
-    { "type": "header", "content": "Popup 'Add To Cart' Button" },
-    { "type": "color", "id": "atc_bg", "label": "Base Background", "default": "#000000" },
-    { "type": "color", "id": "atc_text", "label": "Base Text Color", "default": "#ffffff" },
-    { "type": "color", "id": "atc_bg_hover", "label": "Hover Background", "default": "#f5e130" },
-    { "type": "color", "id": "atc_text_hover", "label": "Hover Text Color", "default": "#111111" },
-
-    { "type": "header", "content": "Special Cart Rule" },
-    { "type": "product", "id": "auto_add_product", "label": "Free Product (Soft Winter Jacket)", "info": "This product automatically adds when user selects 'Black' and 'Medium'." }
+    { "type": "header", "content": "Infinite Scroll Ticker" },
+    { "type": "text", "id": "ticker_text", "label": "Ticker Message", "default": "SUSTAINABLE, ETHICALLY MADE CLOTHES IN SIZES XXS TO 6XL" },
+    { "type": "color", "id": "ticker_bg", "label": "Ticker Background", "default": "#f5f5f0" },
+    { "type": "color", "id": "ticker_color", "label": "Ticker Text Color", "default": "#111111" },
+    { "type": "range", "id": "ticker_speed", "min": 5, "max": 60, "step": 1, "unit": "sec", "label": "Scroll Speed", "default": 25 },
+    { "type": "range", "id": "ticker_size_desk", "min": 10, "max": 24, "step": 1, "unit": "px", "label": "Ticker Text Size (Desktop)", "default": 12 },
+    { "type": "range", "id": "ticker_size_mob", "min": 9, "max": 20, "step": 1, "unit": "px", "label": "Ticker Text Size (Mobile)", "default": 10 }
   ],
-  "blocks": [
-    {
-      "type": "product_card",
-      "name": "Product",
-      "limit": 6,
-      "settings": [
-        { "type": "product", "id": "product", "label": "Product" }
-      ]
-    }
-  ],
-  "presets": [{ "name": " Custom Product Grid" }]
+  "presets": [{ "name": "Custom – Banner Section" }]
 }
 {% endschema %}
