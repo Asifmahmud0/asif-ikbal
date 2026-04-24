@@ -1,6 +1,8 @@
 {% comment %}
   ============================================================
-  Section: Product Grid + Pixel Perfect Popup
+  Section: Custom Product Grid + Popup (Fully Customizable)
+  
+  This custom Product Grid is built entirely from scratch using Vanilla JavaScript, without relying on any pre-built Dawn components. It features a fully responsive design with extensive Customizer controls for styling, spacing, and mobile adjustments. Clicking a product's plus icon opens a dynamic quick-view popup that fetches product JSON via AJAX to display the image, price, description, color swatches, and size dropdowns. The add-to-cart functionality works seamlessly without a page reload,
   ============================================================
 {% endcomment %}
 
@@ -34,128 +36,150 @@
     {% endif %}
   }
 
+  /* ── Heading Settings ── */
   #pg-{{ section.id }} .pg-title {
     color: {{ section.settings.head_color }};
     font-size: {{ section.settings.head_size_d }}px;
     text-align: {{ section.settings.head_align }};
-    margin-bottom: 24px; font-weight: 700; line-height: 1.2;
+    margin-bottom: 24px;
+    font-weight: 700;
+    line-height: 1.2;
   }
 
+  /* ── Card Styles ── */
   .pg-card { position: relative; overflow: hidden; cursor: pointer; background: #eee; }
-  .pg-card__img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; display: block; }
+  .pg-card__img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; display: block; }
   .pg-card:hover .pg-card__img { transform: scale(1.05); }
   .pg-card::after { content:''; position:absolute; inset:0; background:rgba(0,0,0,0); transition:0.3s; pointer-events:none; }
   .pg-card:hover::after { background:rgba(0,0,0,0.1); }
 
+  /* Plus Icon Positions */
   .pg-card__trigger {
-    position: absolute; width: 34px; height: 34px; border-radius: 50%; background: #fff; border: 1px solid #ddd;
-    display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2; transition: 0.2s;
-    font-size: 22px; color: #111; line-height: 1; font-weight: 300;
+    position: absolute; width: 32px; height: 32px;
+    border-radius: 50%; background: #fff; border: 1px solid #ddd;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; z-index: 2; transition: background 0.2s, color 0.2s, transform 0.2s;
+    font-size: 20px; color: #111; line-height: 1;
   }
-  .pg-card__trigger:hover { background: #111; color: #fff; transform: scale(1.1); }
+  .pg-card__trigger:hover { background: #111; color: #fff; }
 
   {% if section.settings.icon_pos == 'center' %}
     .pg-card__trigger { top: 50%; left: 50%; transform: translate(-50%, -50%); }
     .pg-card__trigger:hover { transform: translate(-50%, -50%) scale(1.1); }
   {% elsif section.settings.icon_pos == 'top-left' %}
-    .pg-card__trigger { top: 12px; left: 12px; }
+    .pg-card__trigger { top: 10px; left: 10px; }
+    .pg-card__trigger:hover { transform: scale(1.1); }
   {% elsif section.settings.icon_pos == 'top-right' %}
-    .pg-card__trigger { top: 12px; right: 12px; }
+    .pg-card__trigger { top: 10px; right: 10px; }
+    .pg-card__trigger:hover { transform: scale(1.1); }
   {% elsif section.settings.icon_pos == 'bottom-left' %}
-    .pg-card__trigger { bottom: 12px; left: 12px; }
+    .pg-card__trigger { bottom: 10px; left: 10px; }
+    .pg-card__trigger:hover { transform: scale(1.1); }
   {% elsif section.settings.icon_pos == 'bottom-right' %}
-    .pg-card__trigger { bottom: 12px; right: 12px; }
+    .pg-card__trigger { bottom: 10px; right: 10px; }
+    .pg-card__trigger:hover { transform: scale(1.1); }
   {% endif %}
 
-  /* ── MODAL OVERLAY ── */
+  /* ── Modal Overlay ── */
   .pg-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000;
+    position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000;
     display: flex; align-items: center; justify-content: center;
-    opacity: 0; visibility: hidden; transition: 0.3s ease; padding: 16px;
+    opacity: 0; visibility: hidden; transition: 0.3s; padding: 16px;
   }
   .pg-overlay.is-open { opacity: 1; visibility: visible; }
   
-  /* ── PIXEL PERFECT POPUP CARD ── */
   .pg-popup { 
-    background: #fff; width: 100%; max-width: 400px; padding: 28px 24px 24px;
-    position: relative; transform: translateY(20px); transition: 0.4s ease; opacity: 0; 
-    box-shadow: 0 10px 40px rgba(0,0,0,0.15); border: 1px solid #eaeaea;
+    background: #fff; width: 100%; max-width: 440px; padding: 24px; 
+    position: relative; transform: translateY(20px); transition: 0.3s; opacity: 0; 
+    max-height: 90vh; overflow-y: auto;
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    text-align: {{ section.settings.pop_align }};
   }
   .pg-overlay.is-open .pg-popup { transform: translateY(0); opacity: 1; }
-  
-  /* Close Icon */
-  .pg-popup__close { 
-    position: absolute; top: 16px; right: 16px; background: none; border: none; cursor: pointer; color: #111;
-    display: flex; align-items: center; justify-content: center; transition: opacity 0.2s; opacity: 0.6;
-  }
+  .pg-popup__close { position: absolute; top: 12px; right: 16px; background: none; border: none; font-size: 20px; cursor: pointer; color: #111; opacity: 0.6; transition: 0.2s;}
   .pg-popup__close:hover { opacity: 1; }
-  .pg-popup__close svg { width: 16px; height: 16px; stroke-width: 1.5; }
+  
+  /* ── Popup Header (Dynamic Align) ── */
+  .pg-popup__head {
+    display: flex;
+    gap: 16px; margin-bottom: 20px;
+    {% if section.settings.pop_align == 'center' %}
+      flex-direction: column; align-items: center; text-align: center;
+    {% elsif section.settings.pop_align == 'right' %}
+      flex-direction: row-reverse; text-align: right;
+    {% else %}
+      flex-direction: row; text-align: left;
+    {% endif %}
+  }
 
-  /* Head: Image + Text */
-  .pg-popup__head { 
-    display: grid; 
-    grid-template-columns: 140px 1fr; 
-    gap: 16px; 
-    margin-bottom: 24px; 
-    /* NEW: Controls vertical alignment of image vs text */
-    align-items: {{ section.settings.pop_head_valign }};
+  .pg-popup__thumb {
+    width: {{ section.settings.pop_img_w }}px;
+    height: {{ section.settings.pop_img_h }}px;
+    object-fit: cover; flex-shrink: 0;
+  }
+
+  /* ── Popup Text ── */
+  .pg-popup__name { 
+    font-size: {{ section.settings.pop_title_size }}px; 
+    color: {{ section.settings.pop_title_color }}; 
+    font-weight: 700; margin-bottom: 6px; line-height: 1.2;
+  }
+  .pg-popup__price { 
+    font-size: {{ section.settings.pop_price_size }}px; 
+    color: {{ section.settings.pop_price_color }}; 
+    font-weight: 600; margin-bottom: 8px;
+  }
+  .pg-popup__desc { 
+    font-size: {{ section.settings.pop_desc_size }}px; 
+    color: {{ section.settings.pop_desc_color }}; 
+    line-height: 1.5;
   }
   
-  .pg-popup__thumb { width: 100%; aspect-ratio: 1 / 1.1; object-fit: cover; display: block; }
-  .pg-popup__meta { display: flex; flex-direction: column; justify-content: flex-start; padding-top: 4px; }
+  /* ── Popup Options ── */
+  .pg-popup__label { font-size: 12px; font-weight: bold; display: block; margin-bottom: 8px; text-transform: uppercase; color: #111; }
   
-  .pg-popup__name { font-size: 16px; color: #111; font-weight: 400; line-height: 1.2; margin-bottom: 12px; }
-  .pg-popup__price { font-size: 18px; color: #111; font-weight: 500; margin-bottom: 12px; }
-  .pg-popup__desc { font-size: 11px; color: #555; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+  .pg-popup__colors { 
+    display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;
+    {% if section.settings.pop_align == 'center' %}justify-content: center;{% elsif section.settings.pop_align == 'right' %}justify-content: flex-end;{% endif %}
+  }
   
-  /* Section Labels */
-  .pg-popup__label { font-size: 13px; font-weight: 400; color: #111; display: block; margin-bottom: 8px; }
-  
-  /* Colors Swatch (Pixel Perfect Match) */
-  .pg-popup__colors { display: flex; width: 100%; border: 1px solid #777; margin-bottom: 20px; }
-  
+  /* Swatch Button */
   .pg-color-btn { 
-    flex: 1; padding: 12px 14px; font-size: 14px; color: #111; border: none;
-    border-right: 1px solid #777; cursor: pointer; transition: 0.2s; text-align: left;
-    border-left: 6px solid transparent; /* Dynamic Color Block */
-    background: {{ section.settings.swatch_bg | default: '#ffffff' }};
-    color: {{ section.settings.swatch_text | default: '#111111' }};
+    padding: {{ section.settings.swatch_pad_v }}px {{ section.settings.swatch_pad_h }}px; 
+    font-size: {{ section.settings.swatch_size }}px; 
+    background: {{ section.settings.swatch_bg }}; 
+    color: {{ section.settings.swatch_text }}; 
+    border: 1px solid {{ section.settings.swatch_border }}; 
+    cursor: pointer; font-weight: 600; transition: 0.2s;
   }
-  .pg-color-btn:last-child { border-right: none; }
-  
-  /* FIX: Added active state rendering properly */
   .pg-color-btn.is-active, .pg-color-btn:hover { 
-    background: {{ section.settings.swatch_bg_active | default: '#f0f0f0' }}; 
-    color: {{ section.settings.swatch_text_active | default: '#111111' }}; 
+    background: {{ section.settings.swatch_bg_active }}; 
+    color: {{ section.settings.swatch_text_active }}; 
+    border-color: {{ section.settings.swatch_bg_active }}; 
   }
   
-  /* Size Dropdown (Pixel Perfect Match) */
-  .pg-size-wrap { position: relative; width: 100%; border: 1px solid #777; margin-bottom: 24px; }
+  /* Size Dropdown */
   .pg-size-select { 
-    width: 100%; border: none; padding: 12px 50px 12px 16px; font-size: 14px; 
-    appearance: none; background: transparent; outline: none; cursor: pointer; color: #111;
+    width: 100%; padding: 12px; border: 1px solid #ccc; margin-bottom: 20px; font-size: 13px; 
+    text-align: {{ section.settings.pop_align }}; font-family: inherit;
   }
-  .pg-size-arrow { 
-    position: absolute; right: 0; top: 0; bottom: 0; width: 48px; border-left: 1px solid #777; 
-    display: flex; align-items: center; justify-content: center; pointer-events: none; color: #111;
-  }
-  .pg-size-arrow svg { width: 14px; height: 14px; stroke-width: 1.5; }
-
-  /* ATC Button (Pixel Perfect Match) */
+  
+  /* ── Popup ATC Button ── */
   .pg-popup__atc {
-    width: 100%; background: #000; color: #fff; border: none; padding: 16px 24px;
-    display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s;
+    width: 100%; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; transition: 0.2s; border: none;
+    padding: {{ section.settings.atc_pad_v }}px {{ section.settings.atc_pad_h }}px; 
+    font-size: {{ section.settings.atc_size }}px; 
+    background: {{ section.settings.atc_bg }}; 
+    color: {{ section.settings.atc_text }}; 
   }
-  .pg-popup__atc:hover { background: #222; }
-  .pg-popup__atc span { font-size: 14px; letter-spacing: 0.05em; font-weight: 500; }
-  .pg-popup__atc svg { width: 32px; height: 16px; stroke: currentColor; stroke-width: 1.5; }
+  .pg-popup__atc:hover { 
+    background: {{ section.settings.atc_bg_hover }}; 
+    color: {{ section.settings.atc_text_hover }}; 
+  }
+  .pg-popup__atc.is-loading { opacity: 0.6; pointer-events: none; }
+  .pg-popup__atc.is-added { background: #2a9d5c !important; color: #fff !important; }
 
-  .pg-popup__atc.is-loading { opacity: 0.7; pointer-events: none; }
-  .pg-popup__atc.is-added { background: #2a9d5c !important; justify-content: center; }
-  .pg-popup__atc.is-added svg { display: none; }
-
-  .pg-error { color: #c0392b; font-size: 12px; margin-top: 10px; text-align: center; min-height: 14px; }
+  .pg-error { color: #c0392b; font-size: 13px; margin-top: 10px; text-align: center; }
 
   /* ── Mobile Overrides ── */
   @media (max-width: 768px) {
@@ -165,11 +189,23 @@
       padding-left: {{ section.settings.pad_l_m }}px;
       padding-right: {{ section.settings.pad_r_m }}px;
     }
-    #pg-grid-{{ section.id }} { grid-template-columns: repeat(2, 1fr); gap: {{ section.settings.grid_gap_m }}px; }
+    
+    /* Forces 2 columns on mobile with custom mobile gap */
+    #pg-grid-{{ section.id }} { 
+      grid-template-columns: repeat(2, 1fr); 
+      gap: {{ section.settings.grid_gap_m }}px;
+    }
+
     {% if section.settings.image_ratio == 'custom' %}
-      #pg-grid-{{ section.id }} .pg-card { height: {{ section.settings.custom_height_m }}px; }
+      /* Custom Height specifically for Mobile */
+      #pg-grid-{{ section.id }} .pg-card {
+        height: {{ section.settings.custom_height_m }}px;
+      }
     {% endif %}
-    #pg-{{ section.id }} .pg-title { font-size: {{ section.settings.head_size_m }}px; }
+    
+    #pg-{{ section.id }} .pg-title { 
+      font-size: {{ section.settings.head_size_m }}px; 
+    }
   }
 {%- endstyle -%}
 
@@ -181,117 +217,96 @@
       {%- assign pg_product = block.settings.product -%}
       {%- if pg_product != blank -%}
         <div class="pg-card">
-          <img class="pg-card__img" src="{{ pg_product.featured_image | img_url: '600x' }}" alt="{{ pg_product.title | escape }}" loading="lazy">
-          <button class="pg-card__trigger" aria-label="Quick View" data-handle="{{ pg_product.handle }}">+</button>
+          <img class="pg-card__img" src="{{ pg_product.featured_image | img_url: '800x' }}" alt="{{ pg_product.title | escape }}">
+          <button class="pg-card__trigger" data-handle="{{ pg_product.handle }}">+</button>
         </div>
       {%- endif -%}
     {%- endfor -%}
   </div>
 </section>
 
-<!-- ── Pixel Perfect Modal ── -->
+<!-- ── Modal Overlay ── -->
 <div class="pg-overlay" id="pg-overlay">
   <div class="pg-popup">
-    
-    <button class="pg-popup__close" id="pg-close">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 6L6 18M6 6l12 12"/></svg>
-    </button>
+    <button class="pg-popup__close" id="pg-close">&#x2715;</button>
     
     <div class="pg-popup__head">
       <img class="pg-popup__thumb" id="pg-thumb" src="" alt="">
-      <div class="pg-popup__meta">
-        <h3 class="pg-popup__name" id="pg-name"></h3>
+      <div>
+        <div class="pg-popup__name" id="pg-name"></div>
         <div class="pg-popup__price" id="pg-price"></div>
         <div class="pg-popup__desc" id="pg-desc"></div>
       </div>
     </div>
 
-    <div id="pg-color-section" style="display:none; margin-bottom: 20px;">
+    <div id="pg-color-section" style="display:none;">
       <span class="pg-popup__label" id="pg-color-label">Color</span>
       <div class="pg-popup__colors" id="pg-color-buttons"></div>
     </div>
 
-    <div id="pg-size-section" style="display:none; margin-bottom: 24px;">
+    <div id="pg-size-section" style="display:none;">
       <span class="pg-popup__label" id="pg-size-label">Size</span>
-      <div class="pg-size-wrap">
-        <select class="pg-size-select" id="pg-size-select"></select>
-        <div class="pg-size-arrow">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 9l6 6 6-6"/></svg>
-        </div>
-      </div>
+      <select class="pg-size-select" id="pg-size-select"></select>
     </div>
 
-    <button class="pg-popup__atc" id="pg-atc">
-      <span id="pg-atc-text">ADD TO CART</span>
-      <svg id="pg-atc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
-    </button>
+    <button class="pg-popup__atc" id="pg-atc">ADD TO CART</button>
     <div class="pg-error" id="pg-error"></div>
-
   </div>
 </div>
 
 <script>
 (function() {
+  // Free product variant ID (for the Soft Winter Jacket auto-add logic)
   var BONUS_PRODUCT_ID = {{ section.settings.auto_add_product.selected_or_first_available_variant.id | default: 'null' }};
+  
   var activeProduct = null;
   var selectedOptions = {};
 
   var overlay = document.getElementById('pg-overlay');
   var closeBtn = document.getElementById('pg-close');
   var atcBtn = document.getElementById('pg-atc');
-  var atcText = document.getElementById('pg-atc-text');
-  var atcArrow = document.getElementById('pg-atc-arrow');
   var errorEl = document.getElementById('pg-error');
   var sizeSel = document.getElementById('pg-size-select');
 
   function formatMoney(cents) { return (cents / 100).toFixed(2) + '€'; }
 
+  // Fallback API fetch if liquid ID is not set
   function getJacketVariantId() {
     if (BONUS_PRODUCT_ID) return Promise.resolve(BONUS_PRODUCT_ID);
-    return fetch('/products/soft-winter-jacket.js').then(r => r.ok ? r.json() : null).then(d => d && d.variants ? d.variants[0].id : null).catch(() => null);
+    return fetch('/products/soft-winter-jacket.js')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => d && d.variants ? d.variants[0].id : null)
+      .catch(() => null);
   }
 
+  // Opens popup and parses product JSON
   function openPopup(product) {
     activeProduct = product;
     selectedOptions = {};
     errorEl.textContent = '';
-    atcBtn.classList.remove('is-added');
-    atcText.textContent = "ADD TO CART";
-    atcArrow.style.display = 'block';
     
     document.getElementById('pg-thumb').src = product.images[0] || '';
-    
-    // Inject a break tag to mimic the stacked title in the design
-    var titleWords = product.title.split(' ');
-    if(titleWords.length > 2) {
-      titleWords.splice(2, 0, '<br>');
-      document.getElementById('pg-name').innerHTML = titleWords.join(' ');
-    } else {
-      document.getElementById('pg-name').textContent = product.title;
-    }
-    
+    document.getElementById('pg-name').textContent = product.title;
     document.getElementById('pg-price').textContent = formatMoney(product.variants[0].price);
     
+    // Strip HTML
     var tempDiv = document.createElement('div'); tempDiv.innerHTML = product.description;
     var plainText = tempDiv.textContent || tempDiv.innerText || "";
-    document.getElementById('pg-desc').textContent = plainText.slice(0, 120) + (plainText.length > 120 ? '...' : '');
+    document.getElementById('pg-desc').textContent = plainText.slice(0, 110) + (plainText.length > 110 ? '...' : '');
 
     var colorSec = document.getElementById('pg-color-section');
     var colorBtns = document.getElementById('pg-color-buttons');
     var sizeSec = document.getElementById('pg-size-section');
     
     colorSec.style.display = 'none'; sizeSec.style.display = 'none';
-    colorBtns.innerHTML = ''; sizeSel.innerHTML = '<option value="">Choose your size</option>';
+    colorBtns.innerHTML = ''; sizeSel.innerHTML = '<option value="">Choose Size</option>';
 
     product.options.forEach(function(opt) {
       var name = opt.name.toLowerCase();
       if(name.includes('color') || name.includes('colour')) {
-        document.getElementById('pg-color-label').textContent = opt.name;
         opt.values.forEach(function(val, idx) {
           var btn = document.createElement('button');
           btn.className = 'pg-color-btn' + (idx===0 ? ' is-active':'');
-          // Creates the pixel perfect colored side-border matching the design
-          btn.style.borderLeftColor = val.toLowerCase().replace(/ /g, '');
           btn.textContent = val;
           if(idx===0) selectedOptions[name] = val;
           
@@ -306,7 +321,6 @@
         colorSec.style.display = 'block';
       }
       else if(name.includes('size')) {
-        document.getElementById('pg-size-label').textContent = opt.name;
         opt.values.forEach(function(val) {
           var option = document.createElement('option'); option.value = val; option.textContent = val;
           sizeSel.appendChild(option);
@@ -335,18 +349,22 @@
     });
   }
 
+  // --- ADD TO CART LOGIC WITH AUTOMATIC FREE ITEM RULE ---
   atcBtn.addEventListener('click', function() {
     var sizeSecVisible = document.getElementById('pg-size-section').style.display === 'block';
     if(sizeSecVisible && !sizeSel.value) {
-      errorEl.textContent = "Please select a size."; sizeSel.focus(); return;
+      errorEl.textContent = "Please select a size.";
+      sizeSel.focus();
+      return;
     }
     
     var variant = getSelectedVariant();
     if(!variant) return errorEl.textContent = "This combination is unavailable.";
 
     errorEl.textContent = "";
-    atcBtn.classList.add('is-loading'); atcText.textContent = "ADDING...";
+    atcBtn.classList.add('is-loading'); atcBtn.textContent = "ADDING...";
 
+    // Check options for the "Black" and "Medium" rule
     var vOpts = [variant.option1, variant.option2, variant.option3].filter(Boolean).map(o => o.toLowerCase().trim());
     var isBlackAndMedium = vOpts.includes('black') && vOpts.includes('medium');
 
@@ -355,23 +373,34 @@
 
     jacketPromise.then(function(bonusId) {
       if(bonusId) cartItems.push({ id: bonusId, quantity: 1 });
-      return fetch(window.Shopify.routes.root + 'cart/add.js', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ items: cartItems }) });
+
+      return fetch(window.Shopify.routes.root + 'cart/add.js', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: cartItems })
+      });
     })
     .then(r => r.json())
     .then(function() {
       atcBtn.classList.remove('is-loading'); atcBtn.classList.add('is-added');
-      atcText.textContent = "ADDED TO CART"; atcArrow.style.display = 'none';
+      atcBtn.textContent = "ADDED!";
       
+      // Update Dawn Cart Drawer smoothly
       window.dispatchEvent(new Event('cart:updated'));
       document.documentElement.dispatchEvent(new CustomEvent('cart:change', {bubbles: true}));
 
-      setTimeout(closePopup, 1200);
-    }).catch(function() {
-      atcBtn.classList.remove('is-loading'); atcText.textContent = "ADD TO CART";
-      errorEl.textContent = "Failed to add. Please try again.";
+      setTimeout(function() {
+        overlay.classList.remove('is-open');
+        document.body.style.overflow = '';
+        atcBtn.classList.remove('is-added'); atcBtn.textContent = "ADD TO CART";
+      }, 1000);
+    }).catch(function(e) {
+      atcBtn.classList.remove('is-loading'); atcBtn.textContent = "ADD TO CART";
+      errorEl.textContent = "Failed to add to cart. Please try again.";
     });
   });
 
+  // Open Popup when clicking grid triggers
   document.addEventListener('click', function(e) {
     if(e.target.closest('.pg-card__trigger')) {
       var handle = e.target.closest('.pg-card__trigger').dataset.handle;
@@ -379,7 +408,11 @@
     }
   });
 
-  function closePopup() { overlay.classList.remove('is-open'); document.body.style.overflow = ''; }
+  // Close Popup logic
+  function closePopup() {
+    overlay.classList.remove('is-open');
+    document.body.style.overflow = '';
+  }
   closeBtn.addEventListener('click', closePopup);
   overlay.addEventListener('click', (e) => { if(e.target === overlay) closePopup(); });
   sizeSel.addEventListener('change', updateVariantPrice);
@@ -389,10 +422,10 @@
 
 {% schema %}
 {
-  "name": "Product Grid",
+  "name": "Custom Product Grid",
   "settings": [
     { "type": "header", "content": "Section Layout (Desktop)" },
-    { "type": "color", "id": "bg_color", "label": "Background Color", "default": "#ffffff" },
+    { "type": "color", "id": "bg_color", "label": "Background Color", "default": "#f5f5f0" },
     { "type": "range", "id": "pad_t", "min": 0, "max": 100, "step": 5, "unit": "px", "label": "Padding Top", "default": 40 },
     { "type": "range", "id": "pad_b", "min": 0, "max": 100, "step": 5, "unit": "px", "label": "Padding Bottom", "default": 40 },
     { "type": "range", "id": "pad_l", "min": 0, "max": 100, "step": 5, "unit": "px", "label": "Padding Left", "default": 25 },
@@ -426,7 +459,7 @@
         { "value": "landscape", "label": "Landscape (4:3)" },
         { "value": "custom", "label": "Custom Height" }
       ],
-      "default": "square"
+      "default": "portrait"
     },
     { "type": "range", "id": "custom_height", "min": 200, "max": 600, "step": 10, "unit": "px", "label": "Custom Image Height (Desktop)", "default": 400 },
     { "type": "range", "id": "custom_height_m", "min": 100, "max": 600, "step": 10, "unit": "px", "label": "Custom Image Height (Mobile)", "default": 250 },
@@ -439,25 +472,44 @@
         { "value": "bottom-left", "label": "Bottom Left" },
         { "value": "bottom-right", "label": "Bottom Right" }
       ],
-      "default": "top-right"
+      "default": "bottom-left"
     },
 
-    { "type": "header", "content": "Popup Global Layout" },
+    { "type": "header", "content": "Popup Global & Layout" },
     {
-      "type": "select", "id": "pop_head_valign", "label": "Image & Text Vertical Alignment",
-      "options": [
-        { "value": "start", "label": "Top" },
-        { "value": "center", "label": "Center" },
-        { "value": "end", "label": "Bottom" }
-      ],
-      "default": "start"
+      "type": "select", "id": "pop_align", "label": "Popup Content Alignment",
+      "options": [ { "value": "left", "label": "Left" }, { "value": "center", "label": "Center" }, { "value": "right", "label": "Right" } ],
+      "default": "left"
     },
+    { "type": "range", "id": "pop_img_w", "min": 50, "max": 300, "step": 10, "unit": "px", "label": "Popup Image Width", "default": 80 },
+    { "type": "range", "id": "pop_img_h", "min": 50, "max": 300, "step": 10, "unit": "px", "label": "Popup Image Height", "default": 80 },
 
-    { "type": "header", "content": "Popup Color Swatch Settings" },
-    { "type": "color", "id": "swatch_bg", "label": "Background (Default)", "default": "#ffffff" },
-    { "type": "color", "id": "swatch_text", "label": "Text Color (Default)", "default": "#111111" },
-    { "type": "color", "id": "swatch_bg_active", "label": "Background (Active)", "default": "#f0f0f0" },
-    { "type": "color", "id": "swatch_text_active", "label": "Text Color (Active)", "default": "#111111" },
+    { "type": "header", "content": "Popup Typography" },
+    { "type": "color", "id": "pop_title_color", "label": "Title Color", "default": "#111111" },
+    { "type": "range", "id": "pop_title_size", "min": 12, "max": 30, "step": 1, "unit": "px", "label": "Title Font Size", "default": 16 },
+    { "type": "color", "id": "pop_price_color", "label": "Price Color", "default": "#111111" },
+    { "type": "range", "id": "pop_price_size", "min": 12, "max": 30, "step": 1, "unit": "px", "label": "Price Font Size", "default": 16 },
+    { "type": "color", "id": "pop_desc_color", "label": "Description Color", "default": "#555555" },
+    { "type": "range", "id": "pop_desc_size", "min": 10, "max": 20, "step": 1, "unit": "px", "label": "Description Font Size", "default": 13 },
+
+    { "type": "header", "content": "Popup Color Swatch Buttons" },
+    { "type": "color", "id": "swatch_bg", "label": "Button Background", "default": "#ffffff" },
+    { "type": "color", "id": "swatch_text", "label": "Button Text", "default": "#111111" },
+    { "type": "color", "id": "swatch_border", "label": "Button Border", "default": "#cccccc" },
+    { "type": "color", "id": "swatch_bg_active", "label": "Active Background", "default": "#111111" },
+    { "type": "color", "id": "swatch_text_active", "label": "Active Text", "default": "#ffffff" },
+    { "type": "range", "id": "swatch_size", "min": 10, "max": 20, "step": 1, "unit": "px", "label": "Font Size", "default": 12 },
+    { "type": "range", "id": "swatch_pad_v", "min": 2, "max": 20, "step": 1, "unit": "px", "label": "Padding (Vertical)", "default": 6 },
+    { "type": "range", "id": "swatch_pad_h", "min": 5, "max": 30, "step": 1, "unit": "px", "label": "Padding (Horizontal)", "default": 14 },
+
+    { "type": "header", "content": "Popup 'Add To Cart' Button" },
+    { "type": "color", "id": "atc_bg", "label": "Button Background", "default": "#111111" },
+    { "type": "color", "id": "atc_text", "label": "Button Text", "default": "#ffffff" },
+    { "type": "color", "id": "atc_bg_hover", "label": "Hover Background", "default": "#f5e130" },
+    { "type": "color", "id": "atc_text_hover", "label": "Hover Text Color", "default": "#111111" },
+    { "type": "range", "id": "atc_size", "min": 10, "max": 24, "step": 1, "unit": "px", "label": "Font Size", "default": 14 },
+    { "type": "range", "id": "atc_pad_v", "min": 5, "max": 30, "step": 1, "unit": "px", "label": "Padding (Vertical)", "default": 14 },
+    { "type": "range", "id": "atc_pad_h", "min": 10, "max": 50, "step": 1, "unit": "px", "label": "Padding (Horizontal)", "default": 20 },
 
     { "type": "header", "content": "Special Cart Rule" },
     { "type": "product", "id": "auto_add_product", "label": "Free Product (Soft Winter Jacket)", "info": "This product automatically adds when user selects 'Black' and 'Medium'." }
@@ -472,6 +524,6 @@
       ]
     }
   ],
-  "presets": [{ "name": "Product Grid" }]
+  "presets": [{ "name": "Custom Product Grid" }]
 }
 {% endschema %}
